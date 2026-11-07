@@ -18,18 +18,29 @@ No internet, servers, accounts, or cloud services. Android only for now.
 ```bash
 flutter pub get
 dart run build_runner build      # regenerates Drift code after schema changes
-flutter test                     # unit and protocol tests (no device needed)
+flutter test                     # unit, protocol and UI tests (no device needed)
 flutter run                      # needs a physical Android phone (emulators have no BLE)
 ```
 
 Requirements: Android 7.0+ (API 24) with Bluetooth Low Energy. To test chatting
 you need two phones. See [docs/TESTING.md](docs/TESTING.md).
 
+## Screenshots without a phone
+
+`test/ui` renders every screen at four sizes, at normal and large text, and fails
+on any layout overflow. To save the frames as PNGs:
+
+```bash
+FLUTTER_ROOT=/path/to/flutter UI_SHOTS_DIR=some/dir flutter test test/ui
+```
+
 ## Architecture
 
 ```
 lib/
   app/            routes, theme, startup dependency wiring (AppDependencies)
+    theme/        the three tones (graphite, silver, bronze) and shared motion timing
+    widgets/      glass panels, buttons, radar, backdrop, overlays, responsive rules
   core/
     bluetooth/    radio layer
       bluetooth_service.dart   owns availability, advertising, scanning, sessions, reconnection

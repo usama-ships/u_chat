@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../../app/widgets/overlays.dart';
 import '../../../core/bluetooth/bluetooth_service.dart';
 import '../../../core/security/identity_service.dart';
 import '../../../data/repositories/conversation_repository.dart';
@@ -54,7 +55,7 @@ class SettingsController extends GetxController {
 
   Future<void> copyDeviceId() async {
     await Clipboard.setData(ClipboardData(text: deviceId));
-    Get.snackbar('Copied', 'Device ID copied to clipboard', snackPosition: SnackPosition.BOTTOM);
+    showToast('Copied', 'Device ID copied to clipboard');
   }
 
   /// Debug builds only: creates a local conversation with a fake peer so the
@@ -66,8 +67,7 @@ class SettingsController extends GetxController {
       peerDisplayName: 'Test Device (debug)',
       platform: 'debug',
     );
-    Get.snackbar('Created', 'Debug conversation added to the home screen',
-        snackPosition: SnackPosition.BOTTOM);
+    showToast('Created', 'Debug conversation added to the home screen');
   }
 
   @override

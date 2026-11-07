@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'app/bindings/app_dependencies.dart';
@@ -8,6 +9,8 @@ import 'core/constants/app_constants.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Draw behind the status and navigation bars so the backdrop fills the phone.
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   // cryptography_flutter registers itself automatically, routing
   // `cryptography` algorithms to native Android implementations.
   await AppDependencies.init();
@@ -22,10 +25,15 @@ class UChatApp extends StatelessWidget {
     return GetMaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      theme: AppTheme.dark,
+      themeMode: ThemeMode.dark,
       initialRoute: AppPages.initial,
       getPages: AppPages.pages,
+      // Honour large system text, up to the point where layouts still work.
+      builder: (context, child) => MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.5,
+        child: child!,
+      ),
     );
   }
 }

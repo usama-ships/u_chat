@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_motion.dart';
+import '../../../app/widgets/buttons.dart';
+import '../../../app/widgets/glass.dart';
+import '../../../app/widgets/motion.dart';
+import '../../../app/widgets/overlays.dart';
+import '../../../app/widgets/peer_avatar.dart';
+import '../../../app/widgets/responsive.dart';
+import '../../../app/widgets/silver_backdrop.dart';
+import '../../../app/widgets/status_view.dart';
 import '../../../core/utils/time_format.dart';
 import '../controllers/contact_controller.dart';
 
@@ -10,164 +20,262 @@ class ContactView extends GetView<ContactController> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Contact')),
-      body: Obx(() {
-        if (!controller.isLoaded.value) return const Center(child: CircularProgressIndicator());
-        final peer = controller.peer.value;
-        if (peer == null) return const Center(child: Text('Contact not found'));
-        final safety = controller.safetyNumberText;
-        final connected = controller.isConnected;
+    final gutter = Responsive.gutter(context);
+    return GlassScaffold(
+      appBar: GlassBar.text('Contact'),
+      // Builder: the clearance for the glass bar only exists below the Scaffold.
+      body: Builder(
+        builder: (context) => Obx(() {
+          final inset = MediaQuery.paddingOf(context);
+          if (!controller.isLoaded.value) return const Center(child: BusySpinner(size: 26));
+          final peer = controller.peer.value;
+          if (peer == null) {
+            return const StatusView(icon: Icons.person_off_outlined, title: 'Contact not found');
+          }
+          final safety = controller.safetyNumberText;
+          final connected = controller.isConnected;
+          final connecting = controller.isConnecting;
+          final status = connected
+              ? 'Connected'
+              : connecting
+              ? 'Connecting…'
+              : 'Last seen ${formatConversationTime(peer.lastSeenAt)}';
 
-        return ListView(
-          children: [
-            const SizedBox(height: 24),
-            Center(
-              child: CircleAvatar(
-                radius: 40,
-                backgroundColor: theme.colorScheme.primaryContainer,
-                foregroundColor: theme.colorScheme.onPrimaryContainer,
-                child: Text(peer.displayName.characters.first.toUpperCase(),
-                    style: const TextStyle(fontSize: 32)),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible(
-                  child: Text(peer.displayName,
-                      style: theme.textTheme.headlineSmall, overflow: TextOverflow.ellipsis),
+          return ListView(
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            padding: EdgeInsets.fromLTRB(gutter, inset.top + 24, gutter, inset.bottom + 28),
+            children: [
+              Center(
+                child: PeerAvatar(
+                  seed: peer.id,
+                  name: peer.displayName,
+                  size: 96,
+                  online: connected,
+                  heroTag: 'avatar-${peer.id}',
                 ),
-                if (peer.verified) ...[
-                  const SizedBox(width: 6),
-                  Icon(Icons.verified, color: theme.colorScheme.primary, semanticLabel: 'Verified'),
-                ],
-              ],
-            ),
-            const SizedBox(height: 4),
-            Center(
-              child: Text(
-                connected
-                    ? 'Connected'
-                    : controller.isConnecting
-                        ? 'Connecting…'
-                        : 'Last seen ${formatConversationTime(peer.lastSeenAt)}',
-                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: peer.blocked
-                  ? const SizedBox.shrink()
-                  : connected
-                      ? OutlinedButton.icon(
-                          onPressed: controller.disconnect,
-                          icon: const Icon(Icons.bluetooth_disabled),
-                          label: const Text('Disconnect'),
-                        )
-                      : FilledButton.icon(
-                          onPressed: controller.isConnecting ? null : controller.connect,
-                          icon: const Icon(Icons.bluetooth),
-                          label: const Text('Connect'),
-                        ),
-            ),
-            const Divider(height: 40),
-            _Section(title: 'Safety number', children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: safety == null
-                    ? const Text('Available after the first secure connection with this contact.')
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SelectableText(
-                            safety,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontFamily: 'monospace',
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Compare this number with the one on ${peer.displayName}\'s phone, in person. '
-                            'If they match, your connection is not being intercepted and you can '
-                            'mark the contact as verified.',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ],
+              const SizedBox(height: 14),
+              Entrance(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        peer.displayName,
+                        style: theme.textTheme.headlineSmall,
+                        overflow: TextOverflow.ellipsis,
                       ),
-              ),
-              if (safety != null)
-                SwitchListTile(
-                  title: const Text('Verified'),
-                  subtitle: const Text('I compared the safety numbers and they match'),
-                  value: peer.verified,
-                  onChanged: controller.setVerified,
+                    ),
+                    AnimatedSwitcher(
+                      duration: Motion.medium,
+                      transitionBuilder: popTransition,
+                      child: peer.verified
+                          ? const Padding(
+                              key: ValueKey('verified'),
+                              padding: EdgeInsets.only(left: 6),
+                              child: Icon(
+                                Icons.verified_rounded,
+                                color: AppColors.bronze400,
+                                semanticLabel: 'Verified',
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
                 ),
-            ]),
-            _Section(title: 'Device', children: [
-              ListTile(
-                title: const Text('Device ID'),
-                subtitle: SelectableText(peer.id, style: const TextStyle(fontFamily: 'monospace')),
               ),
-            ]),
-            _Section(title: 'Privacy', children: [
-              SwitchListTile(
-                secondary: const Icon(Icons.block),
-                title: const Text('Block contact'),
-                subtitle: const Text('Blocked contacts cannot connect or send you messages'),
-                value: peer.blocked,
-                onChanged: controller.setBlocked,
+              const SizedBox(height: 4),
+              Entrance(
+                delay: const Duration(milliseconds: 50),
+                child: Center(
+                  child: AnimatedSwitcher(
+                    duration: Motion.medium,
+                    transitionBuilder: fadeLiftTransition,
+                    child: Text(
+                      status,
+                      key: ValueKey(status),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: connected ? AppColors.bronze300 : AppColors.silver300,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              ListTile(
-                leading: Icon(Icons.delete_outline, color: theme.colorScheme.error),
-                title: Text('Delete conversation', style: TextStyle(color: theme.colorScheme.error)),
-                subtitle: const Text('Removes all messages with this contact from this phone'),
-                onTap: () => _confirmDelete(context, peer.displayName),
+              const SizedBox(height: 18),
+              Entrance(
+                delay: const Duration(milliseconds: 100),
+                child: Center(
+                  child: AnimatedSwitcher(
+                    duration: Motion.medium,
+                    transitionBuilder: popTransition,
+                    child: peer.blocked
+                        ? const SizedBox.shrink()
+                        : connected
+                        ? GhostButton(
+                            key: const ValueKey('disconnect'),
+                            label: 'Disconnect',
+                            icon: Icons.bluetooth_disabled_rounded,
+                            onPressed: controller.disconnect,
+                          )
+                        : ChromeButton(
+                            key: const ValueKey('connect'),
+                            label: 'Connect',
+                            icon: Icons.bluetooth_rounded,
+                            onPressed: connecting ? null : controller.connect,
+                          ),
+                  ),
+                ),
               ),
-            ]),
-            const SizedBox(height: 24),
-          ],
-        );
-      }),
+              const SizedBox(height: 28),
+              Entrance(
+                delay: const Duration(milliseconds: 160),
+                child: GlassSection(
+                  title: 'Safety number',
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: safety == null
+                          ? Text(
+                              'Available after the first secure connection with this contact.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: AppColors.silver300,
+                              ),
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _SafetyGrid(number: safety),
+                                const SizedBox(height: 14),
+                                Text(
+                                  'Compare this number with the one on ${peer.displayName}\'s phone, '
+                                  'in person. If they match, your connection is not being '
+                                  'intercepted and you can mark the contact as verified.',
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                    ),
+                    if (safety != null)
+                      GlassSwitchTile(
+                        icon: Icons.verified_outlined,
+                        title: 'Verified',
+                        subtitle: 'I compared the safety numbers and they match',
+                        value: peer.verified,
+                        onChanged: controller.setVerified,
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Entrance(
+                delay: const Duration(milliseconds: 220),
+                child: GlassSection(
+                  title: 'Device',
+                  children: [
+                    GlassTile(
+                      icon: Icons.fingerprint_rounded,
+                      title: 'Device ID',
+                      subtitleWidget: SelectableText(
+                        peer.id,
+                        style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 0.4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Entrance(
+                delay: const Duration(milliseconds: 280),
+                child: GlassSection(
+                  title: 'Privacy',
+                  children: [
+                    GlassSwitchTile(
+                      icon: Icons.block_rounded,
+                      title: 'Block contact',
+                      subtitle: 'Blocked contacts cannot connect or send you messages',
+                      value: peer.blocked,
+                      onChanged: controller.setBlocked,
+                    ),
+                    GlassTile(
+                      icon: Icons.delete_outline_rounded,
+                      iconColor: AppColors.clay,
+                      title: 'Delete conversation',
+                      titleColor: AppColors.clay,
+                      subtitle: 'Removes all messages with this contact from this phone',
+                      onTap: () => _confirmDelete(context, peer.displayName),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
     );
   }
 
   Future<void> _confirmDelete(BuildContext context, String name) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete conversation?'),
-        content: Text('All messages with $name will be removed from this phone. This cannot be undone.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete')),
-        ],
-      ),
+    final confirmed = await showGlassConfirm(
+      context,
+      title: 'Delete conversation?',
+      message: 'All messages with $name will be removed from this phone. This cannot be undone.',
+      confirmLabel: 'Delete',
+      destructive: true,
     );
-    if (confirmed == true) await controller.deleteConversation();
+    if (confirmed) await controller.deleteConversation();
   }
 }
 
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.children});
+/// The six groups of the safety number, laid out for reading aloud.
+class _SafetyGrid extends StatelessWidget {
+  const _SafetyGrid({required this.number});
 
-  final String title;
-  final List<Widget> children;
+  final String number;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Text(title, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary)),
-        ),
-        ...children,
-      ],
+    final groups = number.split(' ');
+    return Semantics(
+      label: 'Safety number $number',
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          const gap = 8.0;
+          final columns = constraints.maxWidth < 260 ? 2 : 3;
+          final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+          return Wrap(
+            spacing: gap,
+            runSpacing: gap,
+            children: [
+              for (var i = 0; i < groups.length; i++)
+                Entrance(
+                  delay: Duration(milliseconds: 240 + 50 * i),
+                  offset: const Offset(0, 10),
+                  child: Container(
+                    width: width,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        groups[i],
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          letterSpacing: 1.6,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

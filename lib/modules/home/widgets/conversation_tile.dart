@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_motion.dart';
+import '../../../app/widgets/glass.dart';
+import '../../../app/widgets/motion.dart';
+import '../../../app/widgets/peer_avatar.dart';
+import '../../../app/widgets/pressable.dart';
 import '../../../core/utils/time_format.dart';
 import '../../../data/models/conversation_with_peer.dart';
 
@@ -24,60 +30,143 @@ class ConversationTile extends StatelessWidget {
     final unread = conversation.unreadCount;
     final lastAt = conversation.lastMessageAt;
     final name = item.peer.displayName;
+    final preview = conversation.lastMessagePreview ?? 'No messages yet';
 
-    return ListTile(
+    return Pressable(
       onTap: onTap,
       onLongPress: onLongPress,
-      leading: Badge(
-        isLabelVisible: isConnected,
-        backgroundColor: Colors.green,
-        smallSize: 12,
-        alignment: AlignmentDirectional.bottomEnd,
-        child: CircleAvatar(
-          backgroundColor: theme.colorScheme.primaryContainer,
-          foregroundColor: theme.colorScheme.onPrimaryContainer,
-          child: Text(name.isEmpty ? '?' : name.characters.first.toUpperCase()),
-        ),
-      ),
-      title: Row(
-        children: [
-          Flexible(child: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis)),
-          if (item.peer.verified) ...[
-            const SizedBox(width: 4),
-            Icon(Icons.verified, size: 16, color: theme.colorScheme.primary, semanticLabel: 'Verified'),
-          ],
-          if (item.peer.blocked) ...[
-            const SizedBox(width: 4),
-            Icon(Icons.block, size: 16, color: theme.colorScheme.error, semanticLabel: 'Blocked'),
-          ],
-        ],
-      ),
-      subtitle: Text(
-        conversation.lastMessagePreview ?? 'No messages yet',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: unread > 0 ? const TextStyle(fontWeight: FontWeight.w600) : null,
-      ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (lastAt != null)
-            Text(
-              formatConversationTime(lastAt),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: unread > 0 ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+      pressedScale: 0.98,
+      child: GlassPanel(
+        radius: 22,
+        rim: unread > 0 ? AppColors.bronzeRim : null,
+        padding: const EdgeInsets.fromLTRB(10, 10, 14, 10),
+        child: Row(
+          children: [
+            PeerAvatar(
+              seed: item.peer.id,
+              name: name,
+              size: 50,
+              online: isConnected,
+              heroTag: 'avatar-${item.peer.id}',
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleMedium,
+                              ),
+                            ),
+                            if (item.peer.verified) ...[
+                              const SizedBox(width: 5),
+                              const Icon(
+                                Icons.verified_rounded,
+                                size: 16,
+                                color: AppColors.bronze400,
+                                semanticLabel: 'Verified',
+                              ),
+                            ],
+                            if (item.peer.blocked) ...[
+                              const SizedBox(width: 5),
+                              const Icon(
+                                Icons.block_rounded,
+                                size: 16,
+                                color: AppColors.clay,
+                                semanticLabel: 'Blocked',
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (lastAt != null) ...[
+                        const SizedBox(width: 8),
+                        AnimatedDefaultTextStyle(
+                          duration: Motion.medium,
+                          style: theme.textTheme.labelSmall!.copyWith(
+                            color: unread > 0 ? AppColors.bronze300 : AppColors.silver400,
+                          ),
+                          child: Text(formatConversationTime(lastAt)),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AnimatedSwitcher(
+                          duration: Motion.medium,
+                          layoutBuilder: startAlignedLayout,
+                          transitionBuilder: fadeLiftTransition,
+                          child: Text(
+                            preview,
+                            key: ValueKey(preview),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: unread > 0 ? AppColors.silver100 : AppColors.silver300,
+                              fontWeight: unread > 0 ? FontWeight.w600 : FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ),
+                      AnimatedSwitcher(
+                        duration: Motion.medium,
+                        transitionBuilder: popTransition,
+                        child: unread > 0
+                            ? Padding(
+                                key: ValueKey(unread),
+                                padding: const EdgeInsets.only(left: 8),
+                                child: _UnreadBadge(count: unread),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          if (unread > 0) ...[
-            const SizedBox(height: 4),
-            Badge(
-              label: Text(unread > 99 ? '99+' : '$unread'),
-              backgroundColor: theme.colorScheme.primary,
-              textColor: theme.colorScheme.onPrimary,
-            ),
           ],
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _UnreadBadge extends StatelessWidget {
+  const _UnreadBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 22),
+      height: 22,
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      decoration: BoxDecoration(
+        gradient: AppColors.bronzeMetal,
+        borderRadius: BorderRadius.circular(11),
+        boxShadow: [BoxShadow(color: AppColors.bronze400.withValues(alpha: 0.35), blurRadius: 10)],
+      ),
+      child: Text(
+        count > 99 ? '99+' : '$count',
+        style: const TextStyle(
+          color: AppColors.graphite950,
+          fontSize: 11.5,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

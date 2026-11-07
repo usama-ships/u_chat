@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import '../../../app/routes/app_routes.dart';
+import '../../../app/widgets/overlays.dart';
 import '../../../core/bluetooth/bluetooth_service.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/messaging/messaging_service.dart';
@@ -96,11 +97,10 @@ class ChatController extends GetxController {
     if (peer == null || isConnected || isConnecting) return;
     final ok = await _bluetooth.connectToKnownPeer(peer.id);
     if (!ok && !isClosed) {
-      Get.snackbar(
+      showToast(
         'Could not connect',
         "${peer.displayName} wasn't found nearby. Make sure U Chat is open on their phone "
             'with Bluetooth on.',
-        snackPosition: SnackPosition.BOTTOM,
       );
     }
   }
@@ -125,10 +125,9 @@ class ChatController extends GetxController {
       await _messaging.sendText(item, text);
       inputController.clear();
     } on ArgumentError catch (e) {
-      Get.snackbar('Cannot send', '${e.message}', snackPosition: SnackPosition.BOTTOM);
+      showToast('Cannot send', '${e.message}');
     } catch (_) {
-      Get.snackbar('Cannot send', 'The message could not be saved.',
-          snackPosition: SnackPosition.BOTTOM);
+      showToast('Cannot send', 'The message could not be saved.');
     } finally {
       isSending.value = false;
     }
@@ -138,8 +137,7 @@ class ChatController extends GetxController {
 
   Future<void> copy(Message message) async {
     await Clipboard.setData(ClipboardData(text: message.content));
-    Get.snackbar('Copied', 'Message copied to clipboard',
-        snackPosition: SnackPosition.BOTTOM, duration: const Duration(seconds: 1));
+    showToast('Copied', 'Message copied to clipboard', duration: const Duration(seconds: 1));
   }
 
   bool get hasValidConversation => _conversationId != null;

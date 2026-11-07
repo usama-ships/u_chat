@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 
 import '../../../app/routes/app_routes.dart';
+import '../../../app/widgets/overlays.dart';
 import '../../../core/bluetooth/bluetooth_service.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/security/identity_service.dart';
@@ -53,8 +54,7 @@ class ContactController extends GetxController {
   Future<void> connect() async {
     final ok = await _bluetooth.connectToKnownPeer(peerId);
     if (!ok && !isClosed) {
-      Get.snackbar('Could not connect', "${peer.value?.displayName ?? 'The contact'} wasn't found nearby.",
-          snackPosition: SnackPosition.BOTTOM);
+      showToast('Could not connect', "${peer.value?.displayName ?? 'The contact'} wasn't found nearby.");
     }
   }
 

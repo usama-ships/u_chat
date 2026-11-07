@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 
 import '../../../app/routes/app_routes.dart';
+import '../../../app/widgets/overlays.dart';
 import '../../../core/bluetooth/bluetooth_service.dart';
 import '../../../core/bluetooth/models/ble_availability.dart';
 import '../../../core/bluetooth/models/discovered_device.dart';
@@ -85,11 +86,9 @@ class NearbyController extends GetxController {
       final conversation = await _conversations.openConversationWithPeer(peer);
       Get.toNamed<void>(Routes.chat, arguments: conversation.id);
     } on BleConnectException catch (e) {
-      Get.snackbar('Could not connect to ${device.displayName}', e.message,
-          snackPosition: SnackPosition.BOTTOM);
+      showToast('Could not connect to ${device.displayName}', e.message);
     } catch (e) {
-      Get.snackbar('Could not connect to ${device.displayName}', '$e',
-          snackPosition: SnackPosition.BOTTOM);
+      showToast('Could not connect to ${device.displayName}', '$e');
     }
   }
 
