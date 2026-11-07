@@ -2,7 +2,9 @@
 // and touch Bluetooth.
 // ignore_for_file: must_call_super
 
+import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart' show Peripheral;
@@ -21,6 +23,8 @@ import 'package:u_chat/core/bluetooth/models/peer_info.dart';
 import 'package:u_chat/core/database/app_database.dart';
 import 'package:u_chat/core/messaging/messaging_service.dart';
 import 'package:u_chat/core/security/identity_service.dart';
+import 'package:u_chat/core/voice/voice_meta.dart';
+import 'package:u_chat/core/voice/voice_recorder.dart';
 import 'package:u_chat/data/models/conversation_with_peer.dart';
 import 'package:u_chat/data/models/delivery_status.dart';
 import 'package:u_chat/data/models/message_type.dart';
@@ -135,6 +139,29 @@ Message msg(
   );
 }
 
+/// A voice note with a speech-like waveform.
+Message voiceMsg(
+  String id, {
+  bool out = false,
+  int seconds = 14,
+  int minutesAgo = 0,
+  DeliveryStatus status = DeliveryStatus.delivered,
+}) {
+  final bars = List.generate(VoiceMeta.waveformBars, (i) {
+    final syllable = math.sin(i * 0.9).abs() * math.sin(i * 0.23 + 1).abs();
+    return (40 + syllable * 215).round();
+  });
+  return msg(id, 'x', out: out, minutesAgo: minutesAgo, status: status).copyWith(
+    type: MessageType.voice,
+    content: VoiceMeta(
+      durationMs: seconds * 1000,
+      sizeBytes: seconds * 3000,
+      sha256: 'a' * 64,
+      waveform: bars,
+    ).encode(),
+  );
+}
+
 final samplePeers = [
   makePeer('aa11aa11aaaaaaaaaaaaaaaaaa', 'Ayesha Khan', verified: true),
   makePeer('bb22bb22bbbbbbbbbbbbbbbbbb', 'Bilal Ahmed'),
@@ -181,14 +208,74 @@ class FakeHome extends HomeController {
   }
 }
 
-class _NoMessaging implements MessagingService {
+/// Remembers what the chat screen asked it to send.
+class RecordingMessaging implements MessagingService {
+  final voiceSent = <VoiceRecording>[];
+
+  @override
+  Future<void> sendVoice(ConversationWithPeer conversation, VoiceRecording recording) async {
+    voiceSent.add(recording);
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
 }
 
+/// A microphone that records nothing, with a switch for each outcome.
+class FakeRecorder implements VoiceRecorder {
+  bool granted = true;
+  bool failToStart = false;
+  bool recording = false;
+  int cancels = 0;
+  final _levels = StreamController<double>.broadcast();
+
+  void speak(double level) => _levels.add(level);
+
+  @override
+  Stream<double> get levels => _levels.stream;
+
+  @override
+  Future<bool> ensurePermission() async => granted;
+
+  @override
+  Future<void> start() async {
+    if (failToStart) throw StateError('no microphone');
+    recording = true;
+  }
+
+  @override
+  Future<VoiceRecording?> stop() async {
+    recording = false;
+    final file = File(
+      '${Directory.systemTemp.path}/fake-${DateTime.now().microsecondsSinceEpoch}.m4a',
+    )..writeAsBytesSync([1, 2, 3]);
+    return VoiceRecording(path: file.path, durationMs: 4000, levels: const [0.5]);
+  }
+
+  @override
+  Future<void> cancel() async {
+    recording = false;
+    cancels++;
+  }
+
+  @override
+  Future<void> dispose() async {}
+}
+
 class FakeChat extends ChatController {
-  FakeChat(Fixture f, this.item, this.items)
-    : super(f.conversations, f.messages, f.bluetooth, _NoMessaging());
+  FakeChat(
+    Fixture f,
+    this.item,
+    this.items, {
+    FakeRecorder? recorder,
+    RecordingMessaging? messaging,
+  }) : super(
+         f.conversations,
+         f.messages,
+         f.bluetooth,
+         messaging ?? RecordingMessaging(),
+         recorder: recorder,
+       );
 
   final ConversationWithPeer item;
   final List<Message> items;
@@ -203,6 +290,36 @@ class FakeChat extends ChatController {
 
   @override
   bool get hasValidConversation => true;
+
+  // Audio state for voice bubbles, set by each test.
+  final voiceProgressById = <String, double>{};
+  final voicePathById = <String, String>{};
+  final voiceFailedIds = <String>{};
+  final progressTick = 0.obs;
+  final fakeCurrentId = RxnString();
+  final fakePlaying = false.obs;
+  final fakePosition = Duration.zero.obs;
+
+  @override
+  double? voiceProgress(String id) {
+    progressTick.value;
+    return voiceProgressById[id];
+  }
+
+  @override
+  bool voiceFailed(String id) => voiceFailedIds.contains(id);
+
+  @override
+  String? voicePath(Message message) => voicePathById[message.id];
+
+  @override
+  String? get currentVoiceId => fakeCurrentId.value;
+
+  @override
+  bool get isVoicePlaying => fakePlaying.value;
+
+  @override
+  Duration get voicePosition => fakePosition.value;
 
   @override
   void onClose() {}

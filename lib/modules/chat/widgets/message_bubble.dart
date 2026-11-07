@@ -7,7 +7,10 @@ import '../../../app/widgets/pressable.dart';
 import '../../../app/widgets/responsive.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/time_format.dart';
+import '../../../core/voice/voice_meta.dart';
 import '../../../data/models/delivery_status.dart';
+import '../../../data/models/message_type.dart';
+import 'voice_bubble.dart';
 
 class MessageBubble extends StatefulWidget {
   const MessageBubble({
@@ -164,6 +167,20 @@ class _Bubble extends StatelessWidget {
         );
     final ink = outgoing ? AppColors.graphite950 : AppColors.silver100;
     final meta = outgoing ? AppColors.graphite700 : AppColors.silver400;
+    final voice = _voiceMeta(message);
+    final footer = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          formatMessageTime(message.sortAt),
+          style: TextStyle(color: meta, fontSize: 11, fontWeight: FontWeight.w500),
+        ),
+        if (outgoing) ...[
+          const SizedBox(width: 4),
+          _StatusIcon(status: message.status, color: meta),
+        ],
+      ],
+    );
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: Responsive.bubbleWidth(context)),
@@ -184,39 +201,39 @@ class _Bubble extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(13, 8, 11, 7),
           // Short messages keep the time on the same line; long ones wrap it
           // to the bottom right.
-          child: Wrap(
-            alignment: WrapAlignment.end,
-            crossAxisAlignment: WrapCrossAlignment.end,
-            spacing: 10,
-            runSpacing: 2,
-            children: [
-              Text(
-                message.content,
-                style: TextStyle(
-                  color: ink,
-                  fontSize: 15,
-                  height: 1.35,
-                  fontWeight: outgoing ? FontWeight.w500 : FontWeight.w400,
-                ),
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    formatMessageTime(message.sortAt),
-                    style: TextStyle(color: meta, fontSize: 11, fontWeight: FontWeight.w500),
-                  ),
-                  if (outgoing) ...[
-                    const SizedBox(width: 4),
-                    _StatusIcon(status: message.status, color: meta),
+          child: voice != null
+              ? VoiceBubble(message: message, meta: voice, footer: footer)
+              : Wrap(
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.end,
+                  spacing: 10,
+                  runSpacing: 2,
+                  children: [
+                    Text(
+                      message.content,
+                      style: TextStyle(
+                        color: ink,
+                        fontSize: 15,
+                        height: 1.35,
+                        fontWeight: outgoing ? FontWeight.w500 : FontWeight.w400,
+                      ),
+                    ),
+                    footer,
                   ],
-                ],
-              ),
-            ],
-          ),
+                ),
         ),
       ),
     );
+  }
+}
+
+/// Null for anything but a readable voice message.
+VoiceMeta? _voiceMeta(Message message) {
+  if (message.type != MessageType.voice) return null;
+  try {
+    return VoiceMeta.decode(message.content);
+  } on FormatException {
+    return null;
   }
 }
 
@@ -259,6 +276,7 @@ class _StatusIcon extends StatelessWidget {
       DeliveryStatus.pending => (Icons.schedule_rounded, 'Pending', color),
       DeliveryStatus.sending => (Icons.arrow_upward_rounded, 'Sending', color),
       DeliveryStatus.sent => (Icons.done_rounded, 'Sent', color),
+      DeliveryStatus.transferring => (Icons.done_rounded, 'Sending audio', color),
       DeliveryStatus.delivered => (Icons.done_all_rounded, 'Delivered', AppColors.bronze700),
       DeliveryStatus.failed => (Icons.error_outline_rounded, 'Failed', const Color(0xFF8F4A30)),
       DeliveryStatus.received => (Icons.done_rounded, 'Received', color),

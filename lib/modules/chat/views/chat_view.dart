@@ -20,8 +20,10 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/time_format.dart';
 import '../../../data/models/delivery_status.dart';
+import '../../../data/models/message_type.dart';
 import '../controllers/chat_controller.dart';
 import '../widgets/message_bubble.dart';
+import '../widgets/voice_composer.dart';
 
 class ChatView extends GetView<ChatController> {
   const ChatView({super.key});
@@ -372,14 +374,15 @@ class _MessageListState extends State<_MessageList> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          GlassTile(
-            icon: Icons.copy_rounded,
-            title: 'Copy text',
-            onTap: () {
-              Navigator.pop(sheetContext);
-              controller.copy(message);
-            },
-          ),
+          if (message.type == MessageType.text)
+            GlassTile(
+              icon: Icons.copy_rounded,
+              title: 'Copy text',
+              onTap: () {
+                Navigator.pop(sheetContext);
+                controller.copy(message);
+              },
+            ),
           if (message.isOutgoing && message.status == DeliveryStatus.failed)
             GlassTile(
               icon: Icons.refresh_rounded,
@@ -403,6 +406,7 @@ class _MessageListState extends State<_MessageList> {
       DeliveryStatus.pending => 'Waiting for connection',
       DeliveryStatus.sending => 'Sending',
       DeliveryStatus.sent => 'Sent, waiting for confirmation',
+      DeliveryStatus.transferring => 'Sending audio',
       DeliveryStatus.delivered => 'Delivered',
       DeliveryStatus.failed => 'Not delivered',
       DeliveryStatus.received => 'Received',
@@ -503,30 +507,63 @@ class _Composer extends GetView<ChatController> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
-            child: GlassPanel(
-              radius: 24,
-              shadow: false,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-              child: TextField(
-                controller: controller.inputController,
-                minLines: 1,
-                maxLines: 5,
-                textCapitalization: TextCapitalization.sentences,
-                inputFormatters: [LengthLimitingTextInputFormatter(AppConstants.maxTextLength)],
-                style: Theme.of(context).textTheme.bodyLarge,
-                decoration: const InputDecoration(hintText: 'Message'),
+            child: Obx(
+              () => AnimatedSwitcher(
+                duration: Motion.medium,
+                transitionBuilder: fadeLiftTransition,
+                child: controller.recordingMode.value == RecordingMode.idle
+                    ? const _MessageField(key: ValueKey('field'))
+                    : const RecordingPanel(key: ValueKey('recording')),
               ),
             ),
           ),
           const SizedBox(width: 10),
-          Obx(
-            () => _SendButton(
-              onPressed: controller.canSend.value && !controller.isSending.value
-                  ? controller.send
-                  : null,
-            ),
-          ),
+          Obx(() {
+            final mode = controller.recordingMode.value;
+            final Widget button;
+            if (mode == RecordingMode.locked) {
+              button = _SendButton(
+                key: const ValueKey('send'),
+                onPressed: controller.finishRecording,
+              );
+            } else if (mode == RecordingMode.idle && controller.canSend.value) {
+              button = _SendButton(
+                key: const ValueKey('send'),
+                onPressed: controller.isSending.value ? null : controller.send,
+              );
+            } else {
+              // Stays mounted while held, so it keeps receiving the finger.
+              button = const MicButton(key: ValueKey('mic'));
+            }
+            return AnimatedSwitcher(
+              duration: Motion.fast,
+              transitionBuilder: popTransition,
+              child: button,
+            );
+          }),
         ],
+      ),
+    );
+  }
+}
+
+class _MessageField extends GetView<ChatController> {
+  const _MessageField({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassPanel(
+      radius: 24,
+      shadow: false,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+      child: TextField(
+        controller: controller.inputController,
+        minLines: 1,
+        maxLines: 5,
+        textCapitalization: TextCapitalization.sentences,
+        inputFormatters: [LengthLimitingTextInputFormatter(AppConstants.maxTextLength)],
+        style: Theme.of(context).textTheme.bodyLarge,
+        decoration: const InputDecoration(hintText: 'Message'),
       ),
     );
   }
@@ -535,7 +572,7 @@ class _Composer extends GetView<ChatController> {
 /// Dormant glass until there's something to send, then turns to polished
 /// metal and tilts up, ready to go.
 class _SendButton extends StatelessWidget {
-  const _SendButton({required this.onPressed});
+  const _SendButton({super.key, required this.onPressed});
 
   final VoidCallback? onPressed;
 

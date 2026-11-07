@@ -11,9 +11,14 @@ import '../bluetooth/models/incoming_frame.dart';
 import '../bluetooth/models/peer_info.dart';
 import '../bluetooth/transport/frame.dart';
 import '../bluetooth/transport/hello.dart';
+import '../../data/models/message_type.dart';
 import '../database/app_database.dart';
+import '../voice/voice_meta.dart';
+import '../voice/voice_recorder.dart';
+import '../voice/voice_store.dart';
 import 'message_protocol.dart';
 import 'peer_transport.dart';
+import 'voice_transfer_service.dart';
 
 /// Reliable, ordered message delivery on top of [PeerTransport].
 ///
@@ -37,6 +42,8 @@ class MessagingService extends GetxService {
     this._messages, {
     this.ackTimeout = const Duration(seconds: 10),
     this.maxAttempts = 3,
+    this.voice,
+    this.voiceStore,
   });
 
   final PeerTransport _transport;
@@ -44,6 +51,8 @@ class MessagingService extends GetxService {
   final MessageRepository _messages;
   final Duration ackTimeout;
   final int maxAttempts;
+  final VoiceTransferService? voice;
+  final VoiceStore? voiceStore;
 
   /// Conversation currently on screen; its incoming messages aren't counted
   /// as unread.
@@ -81,6 +90,31 @@ class MessagingService extends GetxService {
     _kick(conversation.peer.id);
   }
 
+  /// Stores a voice message and sends it like any other. Its small metadata
+  /// goes through the normal queue; the peer then fetches the audio.
+  Future<void> sendVoice(ConversationWithPeer conversation, VoiceRecording recording) async {
+    final store = voiceStore!;
+    final conversationId = conversation.conversation.id;
+    final id = _messages.newMessageId();
+    final file = await store.adopt(recording.path, conversationId, id);
+    if (file.size > VoiceMeta.maxBytes) {
+      await store.deleteMessage(conversationId, id);
+      throw ArgumentError('Recording is too large');
+    }
+    await _messages.queueOutgoingVoice(
+      id: id,
+      conversationId: conversationId,
+      receiverId: conversation.peer.id,
+      meta: VoiceMeta(
+        durationMs: recording.durationMs,
+        sizeBytes: file.size,
+        sha256: file.sha256,
+        waveform: VoiceMeta.barsFrom(recording.levels),
+      ),
+    );
+    _kick(conversation.peer.id);
+  }
+
   /// Requeues a failed message.
   Future<void> retry(Message message) async {
     if (!message.isOutgoing) return;
@@ -98,15 +132,20 @@ class MessagingService extends GetxService {
   // ---------------------------------------------------------------- events
 
   void _onPeerReady(PeerInfo peer) {
-    final stored = _conversations.openConversationWithPeer(peer).then<void>((_) {}).catchError(
-      (Object e) => debugPrint('Storing peer ${peer.id} failed: $e'),
-    );
+    final stored = _conversations
+        .openConversationWithPeer(peer)
+        .then<void>((_) {})
+        .catchError((Object e) => debugPrint('Storing peer ${peer.id} failed: $e'));
     _peerStored[peer.id] = stored;
-    stored.then((_) => _flush(peer.id));
+    stored.then((_) {
+      _flush(peer.id);
+      voice?.pull(peer.id).ignore();
+    });
   }
 
   Future<void> _onPeerLost(String peerId) async {
     _inFlight.remove(peerId)?.timer.cancel();
+    voice?.onPeerLost(peerId);
     await _messages.resetInterrupted(conversationId: _conversations.conversationIdForPeer(peerId));
   }
 
@@ -114,9 +153,9 @@ class MessagingService extends GetxService {
     final peerId = incoming.peer.id;
     // Handle each peer's frames strictly in arrival order.
     final previous = _incomingChain[peerId] ?? Future.value();
-    _incomingChain[peerId] = previous.then((_) => _handleFrame(incoming)).catchError(
-          (Object e) => debugPrint('Handling frame from $peerId failed: $e'),
-        );
+    _incomingChain[peerId] = previous
+        .then((_) => _handleFrame(incoming))
+        .catchError((Object e) => debugPrint('Handling frame from $peerId failed: $e'));
   }
 
   Future<void> _handleFrame(IncomingFrame incoming) async {
@@ -126,6 +165,8 @@ class MessagingService extends GetxService {
         await _handleMessage(incoming.peer, incoming.frame);
       case FrameType.ack:
         await _handleAck(incoming.peer, incoming.frame);
+      case FrameType.voiceRequest || FrameType.voiceChunk || FrameType.voiceDone:
+        await voice?.handle(incoming);
       case FrameType.profile:
         try {
           final name = ProfileCodec.decode(incoming.frame.body);
@@ -152,6 +193,15 @@ class MessagingService extends GetxService {
       return;
     }
 
+    if (payload.type == MessageType.voice) {
+      try {
+        VoiceMeta.decode(payload.content);
+      } on FormatException catch (e) {
+        debugPrint('Rejected voice message from ${peer.id}: ${e.message}');
+        return;
+      }
+    }
+
     // Recreates the conversation if the user deleted it while connected.
     final conversationId = (await _conversations.openConversationWithPeer(peer)).id;
     await _messages.storeIncoming(
@@ -171,6 +221,7 @@ class MessagingService extends GetxService {
     } catch (e) {
       debugPrint('Sending ACK to ${peer.id} failed: $e');
     }
+    if (payload.type == MessageType.voice) voice?.pull(peer.id).ignore();
   }
 
   Future<void> _handleAck(PeerInfo peer, Frame frame) async {
@@ -182,7 +233,13 @@ class MessagingService extends GetxService {
       return;
     }
     for (final id in ack.ids) {
-      await _messages.markDelivered(id, peer.id);
+      // A voice message isn't delivered until its audio has arrived too.
+      final message = await _messages.find(id);
+      if (message?.type == MessageType.voice) {
+        await _messages.markTransferring(id, peer.id);
+      } else {
+        await _messages.markDelivered(id, peer.id);
+      }
       final inFlight = _inFlight[peer.id];
       if (inFlight != null && inFlight.messageId == id) {
         inFlight.timer.cancel();
@@ -236,7 +293,11 @@ class MessagingService extends GetxService {
     } catch (e) {
       // Link trouble: the session will drop and reconnect logic takes over.
       debugPrint('Sending ${next.id} failed: $e');
-      await _messages.setStatus(next.id, DeliveryStatus.pending, onlyFrom: {DeliveryStatus.sending});
+      await _messages.setStatus(
+        next.id,
+        DeliveryStatus.pending,
+        onlyFrom: {DeliveryStatus.sending},
+      );
       return;
     }
 
@@ -250,10 +311,7 @@ class MessagingService extends GetxService {
       _flushAgain.add(peerId);
       return;
     }
-    _inFlight[peerId] = _InFlight(
-      next.id,
-      Timer(ackTimeout, () => _onAckTimeout(peerId, next.id)),
-    );
+    _inFlight[peerId] = _InFlight(next.id, Timer(ackTimeout, () => _onAckTimeout(peerId, next.id)));
   }
 
   Future<void> _onAckTimeout(String peerId, String messageId) async {

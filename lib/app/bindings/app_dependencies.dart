@@ -1,11 +1,15 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../core/bluetooth/bluetooth_service.dart';
 import '../../core/database/app_database.dart';
 import '../../core/messaging/messaging_service.dart';
+import '../../core/messaging/voice_transfer_service.dart';
 import '../../core/security/identity_service.dart';
 import '../../core/security/peer_policy.dart';
+import '../../core/voice/voice_player.dart';
+import '../../core/voice/voice_store.dart';
 import '../../data/repositories/conversation_repository.dart';
 import '../../data/repositories/message_repository.dart';
 import '../../data/repositories/settings_repository.dart';
@@ -28,8 +32,11 @@ abstract final class AppDependencies {
     final settings = Get.put(SettingsRepository(db.settingsDao, identity), permanent: true);
     await settings.ensureDefaults();
 
+    final voiceStore = Get.put(VoiceStore(await getApplicationSupportDirectory()), permanent: true);
+    Get.put(VoicePlayer(), permanent: true);
+
     final conversations = Get.put(
-      ConversationRepository(db.conversationDao, db.peerDao, identity),
+      ConversationRepository(db.conversationDao, db.peerDao, identity, voiceStore: voiceStore),
       permanent: true,
     );
     final messages = Get.put(MessageRepository(db.messageDao, identity), permanent: true);
@@ -39,8 +46,15 @@ abstract final class AppDependencies {
       permanent: true,
     );
     bluetooth.admitPeer = PeerPolicy(conversations, settings).admit;
+    final voice = Get.put(VoiceTransferService(bluetooth, messages, voiceStore), permanent: true);
     await Get.putAsync<MessagingService>(
-      () => MessagingService(bluetooth, conversations, messages).init(),
+      () => MessagingService(
+        bluetooth,
+        conversations,
+        messages,
+        voice: voice,
+        voiceStore: voiceStore,
+      ).init(),
       permanent: true,
     );
   }

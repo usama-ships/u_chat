@@ -46,6 +46,8 @@ dependencies:
   uuid: ^4.6.0
   intl: ^0.20.3
   crypto: ^3.0.8
+  record: ^7.1.2
+  just_audio: ^0.10.6
 
 dev_dependencies:
   flutter_test:

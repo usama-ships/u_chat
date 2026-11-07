@@ -11,7 +11,11 @@ enum DeliveryStatus {
   /// This does NOT mean the peer app processed it; see [delivered].
   sent,
 
-  /// Outgoing: the peer app stored the message and returned an ACK.
+  /// Outgoing voice message: the peer stored it and is fetching the audio.
+  transferring,
+
+  /// Outgoing: the peer app stored the message and returned an ACK. For a voice
+  /// message, the audio has also arrived and passed its integrity check.
   delivered,
 
   /// Outgoing: no ACK after all retries. Can be retried manually.

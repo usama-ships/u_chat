@@ -18,6 +18,9 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
 
+    <!-- Voice messages. Recording only happens while the user holds the mic button. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <!-- allowBackup=false: the identity private key lives in the Android Keystore and is not
          backed up. Restoring the database without it would leave chats bound to a lost identity. -->
     <application

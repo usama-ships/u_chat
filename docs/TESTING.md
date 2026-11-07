@@ -75,3 +75,16 @@ the lines starting with `PeerSession … closed:`.
 |---|---|---|
 | 8.1 | Home button on B for 1 minute | B stops advertising (expected). Existing connection may survive briefly |
 | 8.2 | Return to B | Advertising resumes; reconnects if needed |
+
+## 9. Voice messages
+
+Needs two phones, on the same version of the app.
+
+1. Hold the mic, speak for a few seconds, release. The note appears at once with a progress ring.
+2. Time a 1-minute note from release to the double tick, and note the result. This is the real transfer speed.
+3. Play it on the other phone. Try 1.5× and 2×, and drag along the trace to seek.
+4. Slide left while holding: nothing is sent. Slide up: recording continues without a finger, and the delete and send buttons both work.
+5. Send a long note and, during the transfer, send a text. The text should arrive before the note finishes.
+6. Walk out of range during a transfer, then come back. It should continue from where it stopped, not restart.
+7. Deny the microphone when asked: a clear message appears and nothing records.
+8. Delete the conversation: the audio goes too.

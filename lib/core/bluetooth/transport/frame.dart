@@ -27,6 +27,15 @@ enum FrameType {
   /// Delivery acknowledgement.
   ack(0x11),
 
+  /// Receiver asks for voice audio from an offset.
+  voiceRequest(0x12),
+
+  /// A piece of voice audio.
+  voiceChunk(0x13),
+
+  /// Receiver has all the audio and verified it.
+  voiceDone(0x14),
+
   /// Encrypted container for any other frame.
   sealed(0x20);
 

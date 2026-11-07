@@ -22,8 +22,7 @@ class SettingsRepository {
   final SettingsDao _dao;
   final IdentityService _identity;
 
-  String get defaultDisplayName =>
-      'User ${_identity.deviceId.substring(0, 4).toUpperCase()}';
+  String get defaultDisplayName => 'User ${_identity.deviceId.substring(0, 4).toUpperCase()}';
 
   /// Writes defaults on first launch.
   Future<void> ensureDefaults() async {

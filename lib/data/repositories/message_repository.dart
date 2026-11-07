@@ -4,6 +4,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/database/app_database.dart';
 import '../../core/database/daos/message_dao.dart';
 import '../../core/security/identity_service.dart';
+import '../../core/voice/voice_meta.dart';
 import '../models/delivery_status.dart';
 import '../models/message_type.dart';
 
@@ -48,6 +49,29 @@ class MessageRepository {
     );
   }
 
+  /// A fresh ID, for files that must exist before their message row.
+  String newMessageId() => _uuid.v4();
+
+  /// Stores an outgoing voice message with status `pending`. Its audio must
+  /// already be in the `VoiceStore` under [id].
+  Future<Message> queueOutgoingVoice({
+    required String id,
+    required String conversationId,
+    required String receiverId,
+    required VoiceMeta meta,
+  }) {
+    return _dao.insertOutgoing(
+      id: id,
+      conversationId: conversationId,
+      senderId: myId,
+      receiverId: receiverId,
+      type: MessageType.voice,
+      content: meta.encode(),
+      preview: meta.previewLabel,
+      now: DateTime.now().millisecondsSinceEpoch,
+    );
+  }
+
   /// Stores a received message. Returns false if it was a duplicate.
   Future<bool> storeIncoming({
     required String id,
@@ -58,19 +82,25 @@ class MessageRepository {
     required int sentAt,
     required int seq,
     required bool incrementUnread,
-  }) =>
-      _dao.insertIncoming(
-        id: id,
-        conversationId: conversationId,
-        senderId: senderId,
-        receiverId: myId,
-        type: type,
-        content: content,
-        sentAt: sentAt,
-        seq: seq,
-        now: DateTime.now().millisecondsSinceEpoch,
-        incrementUnread: incrementUnread,
-      );
+  }) => _dao.insertIncoming(
+    id: id,
+    conversationId: conversationId,
+    senderId: senderId,
+    receiverId: myId,
+    type: type,
+    content: content,
+    sentAt: sentAt,
+    seq: seq,
+    now: DateTime.now().millisecondsSinceEpoch,
+    incrementUnread: incrementUnread,
+    preview: type == MessageType.voice ? VoiceMeta.decode(content).previewLabel : null,
+  );
+
+  Future<Message?> find(String id) => _dao.findById(id);
+
+  Future<List<Message>> incomingVoiceFrom(String peerId) => _dao.incomingVoiceFrom(peerId);
+
+  Future<bool> markTransferring(String id, String peerId) => _dao.markTransferring(id, peerId);
 
   Future<Message?> nextToSend(String conversationId) =>
       _dao.nextUndeliveredOutgoing(conversationId);

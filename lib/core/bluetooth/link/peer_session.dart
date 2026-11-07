@@ -299,7 +299,12 @@ class PeerSession {
         byeReceived = true;
         // The GATT client owns the connection, so it is the one to drop it.
         close('peer said bye', disconnect: link.isCentralRole);
-      case FrameType.message || FrameType.ack || FrameType.profile:
+      case FrameType.message ||
+          FrameType.ack ||
+          FrameType.profile ||
+          FrameType.voiceRequest ||
+          FrameType.voiceChunk ||
+          FrameType.voiceDone:
         onFrame(this, frame);
       case FrameType.hello || FrameType.auth || FrameType.sealed:
         close('protocol violation: nested ${frame.type.name}', disconnect: true);
