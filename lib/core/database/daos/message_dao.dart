@@ -158,14 +158,21 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
   }
 
   /// Messages interrupted mid-send (app killed, link lost) go back to pending.
+  /// Voice messages whose audio was still on its way go back to sent, so they
+  /// are offered again on reconnect and the peer confirms what it already has.
   /// Limited to one conversation when [conversationId] is given.
-  Future<int> resetSendingToPending({String? conversationId}) {
-    final query = update(messages)
-      ..where((m) => m.isOutgoing.equals(true) & m.status.equalsValue(DeliveryStatus.sending));
-    if (conversationId != null) {
-      query.where((m) => m.conversationId.equals(conversationId));
+  Future<int> resetSendingToPending({String? conversationId}) async {
+    Future<int> move(DeliveryStatus from, DeliveryStatus to) {
+      final query = update(messages)
+        ..where((m) => m.isOutgoing.equals(true) & m.status.equalsValue(from));
+      if (conversationId != null) {
+        query.where((m) => m.conversationId.equals(conversationId));
+      }
+      return query.write(MessagesCompanion(status: Value(to)));
     }
-    return query.write(const MessagesCompanion(status: Value(DeliveryStatus.pending)));
+
+    return await move(DeliveryStatus.sending, DeliveryStatus.pending) +
+        await move(DeliveryStatus.transferring, DeliveryStatus.sent);
   }
 
   /// Marks an outgoing message delivered, only if it was really sent to

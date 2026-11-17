@@ -61,17 +61,14 @@ abstract class BleLink {
 }
 
 class CentralLink extends BleLink {
-  CentralLink(this._manager, this.peripheral, this._rx, this._tx) : super('c:${peripheral.uuid}');
+  CentralLink(this._manager, this.peripheral, this._rx) : super('c:${peripheral.uuid}');
 
   final CentralManager _manager;
   final Peripheral peripheral;
   final GATTCharacteristic _rx;
-  final GATTCharacteristic _tx;
 
   @override
   bool get isCentralRole => true;
-
-  GATTCharacteristic get tx => _tx;
 
   @override
   Future<int> maxPacketSize() =>
@@ -131,7 +128,8 @@ class PeripheralLink extends BleLink {
   @override
   Future<void> disconnect() async {
     try {
-      await _manager.disconnect(central);
+      // Bounded, so a stuck stack can't keep the peer listed as connected.
+      await _manager.disconnect(central).timeout(BleConstants.gattOperationTimeout);
     } catch (e) {
       debugPrint('PeripheralLink.disconnect: $e');
     }

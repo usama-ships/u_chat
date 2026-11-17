@@ -72,16 +72,20 @@ class TestIdentity {
   /// [claim] lets an impostor present someone else's ID and public key while
   /// still signing with its own private key.
   LocalIdentity local(String name, {TestIdentity? claim}) => LocalIdentity(
-        deviceId: (claim ?? this).id,
-        publicKey: (claim ?? this).publicKey,
-        displayName: name,
-        sign: (m) async => (await Ed25519().sign(m, keyPair: keyPair)).bytes,
-      );
+    deviceId: (claim ?? this).id,
+    publicKey: (claim ?? this).publicKey,
+    displayName: name,
+    sign: (m) async => (await Ed25519().sign(m, keyPair: keyPair)).bytes,
+  );
 }
 
 class Harness {
-  Harness(this.link, LocalIdentity identity,
-      {String? expectedPrefix, Future<bool> Function(PeerInfo)? admit}) {
+  Harness(
+    this.link,
+    LocalIdentity identity, {
+    String? expectedPrefix,
+    Future<bool> Function(PeerInfo)? admit,
+  }) {
     session = PeerSession(
       link: link,
       identity: identity,
@@ -104,11 +108,7 @@ class Harness {
   final closed = Completer<void>();
 }
 
-Future<(Harness, Harness)> connected(
-  TestIdentity a,
-  TestIdentity b, {
-  int packetSize = 20,
-}) async {
+Future<(Harness, Harness)> connected(TestIdentity a, TestIdentity b, {int packetSize = 20}) async {
   final (la, lb) = FakeLink.pair(packetSize: packetSize);
   final ha = Harness(la, a.local('Alice'));
   final hb = Harness(lb, b.local('Bob'));
@@ -244,8 +244,12 @@ void main() {
     final (la, lb) = FakeLink.pair(packetSize: 512);
     final ha = Harness(la, alice.local('Alice'));
     ha.session.start();
-    final oldHello = utf8.encode(jsonEncode({'v': 1, 'id': bob.id, 'name': 'Bob', 'pk': base64Encode(bob.publicKey)}));
-    lb.sendPacket(Fragmenter().split(Frame(FrameType.hello, Uint8List.fromList(oldHello)).encode(), 512).single);
+    final oldHello = utf8.encode(
+      jsonEncode({'v': 1, 'id': bob.id, 'name': 'Bob', 'pk': base64Encode(bob.publicKey)}),
+    );
+    lb.sendPacket(
+      Fragmenter().split(Frame(FrameType.hello, Uint8List.fromList(oldHello)).encode(), 512).single,
+    );
     await expectLater(ha.session.ready, throwsStateError);
     expect(ha.session.closeReason, contains('incompatible version'));
   });

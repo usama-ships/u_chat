@@ -44,7 +44,7 @@ class _RadarState extends State<Radar> with TickerProviderStateMixin {
   );
   late final AnimationController _power = AnimationController(vsync: this, duration: Motion.slow);
 
-  /// When each blip was first drawn, in sweep turns, so it can pop in.
+  /// When each blip was first drawn, so it can pop in.
   final _firstSeen = <String, DateTime>{};
 
   @override
@@ -100,6 +100,8 @@ class _RadarState extends State<Radar> with TickerProviderStateMixin {
               power: _power,
               blips: widget.blips,
               firstSeen: _firstSeen,
+              // Nothing ticks to play the pop-in, so new blips show at once.
+              popIn: _sweep.isAnimating,
             ),
           ),
         ),
@@ -114,12 +116,14 @@ class _RadarPainter extends CustomPainter {
     required this.power,
     required this.blips,
     required this.firstSeen,
+    required this.popIn,
   }) : super(repaint: Listenable.merge([sweep, power]));
 
   final Animation<double> sweep;
   final Animation<double> power;
   final List<RadarBlip> blips;
   final Map<String, DateTime> firstSeen;
+  final bool popIn;
 
   late final Map<String, TextPainter> _labels = {
     for (final blip in blips)
@@ -198,7 +202,7 @@ class _RadarPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.2
-            ..color = AppColors.accentLight.withValues(alpha: 0.28 * (1 - p) * on),
+            ..color = AppColors.accent.withValues(alpha: 0.28 * (1 - p) * on),
         );
       }
 
@@ -228,7 +232,7 @@ class _RadarPainter extends CustomPainter {
         center + Offset(radius, 0),
         Paint()
           ..strokeWidth = 1.4
-          ..color = AppColors.accentLight.withValues(alpha: 0.75 * on),
+          ..color = AppColors.accent.withValues(alpha: 0.75 * on),
       );
       canvas.restore();
     }
@@ -241,7 +245,7 @@ class _RadarPainter extends CustomPainter {
       final position = center + Offset(math.cos(theta), math.sin(theta)) * distance;
 
       final age = now.difference(firstSeen[blip.id] ?? now).inMilliseconds / 500;
-      final appear = Curves.easeOutBack.transform(age.clamp(0.0, 1.0));
+      final appear = popIn ? Curves.easeOutBack.transform(age.clamp(0.0, 1.0)) : 1.0;
 
       // Flares as the beam passes over, then cools down.
       final sinceBeam = ((angle - theta) % (2 * math.pi)) / (2 * math.pi);
@@ -308,7 +312,8 @@ class _RadarPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_RadarPainter oldDelegate) => oldDelegate.blips != blips;
+  bool shouldRepaint(_RadarPainter oldDelegate) =>
+      oldDelegate.blips != blips || oldDelegate.popIn != popIn;
 }
 
 /// Maps a signal reading in dBm to the [RadarBlip.strength] scale.

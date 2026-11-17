@@ -130,7 +130,7 @@ class _ProfileCard extends GetView<SettingsController> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Panel(
-      radius: 24,
+      radius: 22,
       padding: const EdgeInsets.fromLTRB(14, 14, 10, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -251,14 +251,14 @@ class _BluetoothStatusTiles extends GetView<SettingsController> {
                   )
                 : null,
           ),
-          const Divider(indent: 16, endIndent: 16),
+          const Divider(indent: 62),
           ListRow(
             icon: bt.isAdvertising.value ? Icons.visibility_rounded : Icons.visibility_off_outlined,
             iconColor: bt.isAdvertising.value ? AppColors.success : AppColors.textMuted,
             title: 'Visibility',
             subtitle: visibility,
           ),
-          const Divider(indent: 16, endIndent: 16),
+          const Divider(indent: 62),
           const ListRow(
             icon: Icons.info_outline_rounded,
             title: 'Permissions',
@@ -288,6 +288,8 @@ class _EditNameDialogState extends State<_EditNameDialog> {
   bool _saving = false;
 
   Future<void> _submit() async {
+    // Enter and the Save button can both fire before the first save ends.
+    if (_saving) return;
     setState(() => _saving = true);
     final error = await widget.onSave(_text.text);
     if (!mounted) return;
@@ -318,7 +320,8 @@ class _EditNameDialogState extends State<_EditNameDialog> {
         const SizedBox(height: 14),
         Panel(
           radius: 16,
-          shadow: false,
+          color: AppColors.surfaceHigh,
+          borderColor: AppColors.accentBorder,
           padding: const EdgeInsets.fromLTRB(14, 4, 14, 2),
           child: TextField(
             controller: _text,

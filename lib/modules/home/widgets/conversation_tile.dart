@@ -72,7 +72,7 @@ class ConversationTile extends StatelessWidget {
                               const Icon(
                                 Icons.verified_rounded,
                                 size: 16,
-                                color: AppColors.accentLight,
+                                color: AppColors.accent,
                                 semanticLabel: 'Verified',
                               ),
                             ],

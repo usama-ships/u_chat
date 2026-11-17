@@ -128,7 +128,7 @@ class _TracePainter extends CustomPainter {
 
 /// The trace while recording: newest sound enters at the right and scrolls left.
 class LiveTrace extends StatelessWidget {
-  const LiveTrace({super.key, required this.levels, this.color = AppColors.accentLight});
+  const LiveTrace({super.key, required this.levels, this.color = AppColors.accent});
 
   final List<double> levels;
   final Color color;

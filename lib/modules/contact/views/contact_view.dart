@@ -75,7 +75,7 @@ class ContactView extends GetView<ContactController> {
                               padding: EdgeInsets.only(left: 6),
                               child: Icon(
                                 Icons.verified_rounded,
-                                color: AppColors.accentLight,
+                                color: AppColors.accent,
                                 semanticLabel: 'Verified',
                               ),
                             )
@@ -256,7 +256,7 @@ class _SafetyGrid extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.glassTop,
+                      color: AppColors.surfaceHigh,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: FittedBox(

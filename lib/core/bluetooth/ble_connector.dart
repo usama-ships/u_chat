@@ -81,7 +81,7 @@ class BleConnector {
       }
 
       // Register before subscribing so the first notification isn't lost.
-      final link = CentralLink(_manager, peripheral, rx, tx);
+      final link = CentralLink(_manager, peripheral, rx);
       _links[peripheral.uuid] = link;
       link.closed.then((_) {
         if (identical(_links[peripheral.uuid], link)) _links.remove(peripheral.uuid);

@@ -88,7 +88,8 @@ class BluetoothService extends GetxService with WidgetsBindingObserver implement
   bool isPeerConnected(String peerId) => _sessionByPeer[peerId]?.isReady ?? false;
 
   /// Policy for authenticated peers (blocked / unknown devices). Set at startup.
-  Future<bool> Function(PeerInfo peer)? admitPeer;
+  /// [outgoing] is true when this phone started the connection.
+  Future<bool> Function(PeerInfo peer, {required bool outgoing})? admitPeer;
 
   // ---- Internal ----
   final _subscriptions = <StreamSubscription<Object?>>[];
@@ -393,7 +394,9 @@ class BluetoothService extends GetxService with WidgetsBindingObserver implement
         sign: (message) async => (await _identity.sign(message)).bytes,
       ),
       expectedIdPrefix: expectedIdPrefix,
-      admit: admitPeer,
+      admit: admitPeer == null
+          ? null
+          : (peer) => admitPeer!(peer, outgoing: expectedIdPrefix != null),
       onReady: _onSessionReady,
       onFrame: _onSessionFrame,
       onClosed: _onSessionClosed,

@@ -201,7 +201,7 @@ class _StatusBar extends GetView<NearbyController> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            PulseDot(active: scanning, color: AppColors.accentLight, size: 7),
+            PulseDot(active: scanning, color: AppColors.accent, size: 7),
             AnimatedSwitcher(
               duration: Motion.medium,
               transitionBuilder: fadeLiftTransition,
@@ -487,7 +487,7 @@ class _Notice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(Responsive.gutter(context), 8, Responsive.gutter(context), 0),
       child: Panel(
         radius: 16,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

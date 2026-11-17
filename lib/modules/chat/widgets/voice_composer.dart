@@ -120,27 +120,12 @@ class RecordingPanel extends GetView<ChatController> {
       child: SizedBox(
         height: 48,
         child: Obx(() {
-          final locked = controller.recordingMode.value == RecordingMode.locked;
           final drag = controller.recordingDrag.value;
           final remaining = VoiceMeta.maxRecordingMs - controller.recordingMs.value;
           final nearLimit = remaining < 10000;
           return Row(
             children: [
-              if (locked)
-                GestureDetector(
-                  onTap: controller.cancelRecording,
-                  behavior: HitTestBehavior.opaque,
-                  child: Semantics(
-                    button: true,
-                    label: 'Discard recording',
-                    child: const Padding(
-                      padding: EdgeInsets.all(6),
-                      child: Icon(Icons.delete_outline_rounded, size: 22, color: AppColors.danger),
-                    ),
-                  ),
-                )
-              else
-                const PulseDot(size: 8, color: AppColors.danger),
+              const PulseDot(size: 8, color: AppColors.danger),
               const SizedBox(width: 4),
               Text(
                 formatVoiceDuration(controller.recordingMs.value),
@@ -151,46 +136,44 @@ class RecordingPanel extends GetView<ChatController> {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: locked || drag.cancel == 0
+                child: drag.cancel == 0
                     ? LiveTrace(levels: controller.liveLevels.toList())
                     : const SizedBox.shrink(),
               ),
-              if (!locked) ...[
-                const SizedBox(width: 8),
-                Transform.translate(
-                  offset: Offset(-40 * drag.cancel, 0),
-                  child: Opacity(
-                    opacity: (1 - drag.cancel).clamp(0.25, 1.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.chevron_left_rounded,
-                          size: 18,
+              const SizedBox(width: 8),
+              Transform.translate(
+                offset: Offset(-40 * drag.cancel, 0),
+                child: Opacity(
+                  opacity: (1 - drag.cancel).clamp(0.25, 1.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.chevron_left_rounded,
+                        size: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                      Text(
+                        'Cancel',
+                        style: theme.textTheme.labelMedium?.copyWith(
                           color: AppColors.textSecondary,
                         ),
-                        Text(
-                          'Cancel',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Transform.translate(
-                  offset: Offset(0, -6 * drag.lock),
-                  child: Icon(
-                    drag.lock > 0 ? Icons.lock_rounded : Icons.lock_open_rounded,
-                    size: 17,
-                    color: Color.lerp(AppColors.textMuted, AppColors.accentLight, drag.lock),
-                    semanticLabel: 'Slide up to lock',
-                  ),
+              ),
+              const SizedBox(width: 8),
+              Transform.translate(
+                offset: Offset(0, -6 * drag.lock),
+                child: Icon(
+                  drag.lock > 0 ? Icons.lock_rounded : Icons.lock_open_rounded,
+                  size: 17,
+                  color: Color.lerp(AppColors.textMuted, AppColors.accent, drag.lock),
+                  semanticLabel: 'Slide up to lock',
                 ),
-                const SizedBox(width: 4),
-              ],
+              ),
+              const SizedBox(width: 4),
             ],
           );
         }),
@@ -237,10 +220,7 @@ class VoiceNoteCard extends GetView<ChatController> {
             ),
             const SizedBox(height: 14),
             ExcludeSemantics(
-              child: SizedBox(
-                height: 28,
-                child: LiveTrace(levels: controller.liveLevels.toList(), color: AppColors.accent),
-              ),
+              child: LiveTrace(levels: controller.liveLevels.toList(), color: AppColors.accent),
             ),
             const SizedBox(height: 12),
             Row(

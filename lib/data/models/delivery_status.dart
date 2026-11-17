@@ -22,7 +22,5 @@ enum DeliveryStatus {
   failed,
 
   /// Incoming: received from a peer and stored.
-  received;
-
-  bool get isTerminalSuccess => this == delivered || this == received;
+  received,
 }

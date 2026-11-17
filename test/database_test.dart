@@ -25,14 +25,14 @@ void main() {
       (await db.conversationDao.watchWithPeer(convId).first)!.conversation;
 
   Future<Message> sendOut(String id, String text, int now) => db.messageDao.insertOutgoing(
-        id: id,
-        conversationId: convId,
-        senderId: me,
-        receiverId: peer,
-        type: MessageType.text,
-        content: text,
-        now: now,
-      );
+    id: id,
+    conversationId: convId,
+    senderId: me,
+    receiverId: peer,
+    type: MessageType.text,
+    content: text,
+    now: now,
+  );
 
   Future<bool> receive(String id, String text, int now, {bool unread = true}) =>
       db.messageDao.insertIncoming(

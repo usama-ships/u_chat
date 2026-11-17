@@ -12,9 +12,17 @@ Future<(SessionCipher, SessionCipher)> cipherPair() async {
   final b = await EphemeralKeys.generate();
   final t = Handshake.transcript(idA: 'aaa', helloA: [1], idB: 'bbb', helloB: [2]);
   final ca = await Handshake.deriveCipher(
-      myEphemeral: a.keyPair, peerEphemeral: b.publicKey, transcript: t, iAmLow: true);
+    myEphemeral: a.keyPair,
+    peerEphemeral: b.publicKey,
+    transcript: t,
+    iAmLow: true,
+  );
   final cb = await Handshake.deriveCipher(
-      myEphemeral: b.keyPair, peerEphemeral: a.publicKey, transcript: t, iAmLow: false);
+    myEphemeral: b.keyPair,
+    peerEphemeral: a.publicKey,
+    transcript: t,
+    iAmLow: false,
+  );
   return (ca, cb);
 }
 
@@ -60,11 +68,23 @@ void main() {
     final t = Handshake.transcript(idA: id, helloA: [1], idB: 'zzz', helloB: [2]);
     final sig = (await Ed25519().sign(Handshake.authMessage(id, t), keyPair: kp)).bytes;
 
-    expect(await Handshake.verifyAuth(peerPublicKey: pk, peerId: id, transcript: t, signature: sig), isTrue);
+    expect(
+      await Handshake.verifyAuth(peerPublicKey: pk, peerId: id, transcript: t, signature: sig),
+      isTrue,
+    );
     final otherT = Handshake.transcript(idA: id, helloA: [9], idB: 'zzz', helloB: [2]);
-    expect(await Handshake.verifyAuth(peerPublicKey: pk, peerId: id, transcript: otherT, signature: sig), isFalse);
-    expect(await Handshake.verifyAuth(peerPublicKey: pk, peerId: 'zzz', transcript: t, signature: sig), isFalse);
-    expect(await Handshake.verifyAuth(peerPublicKey: pk, peerId: id, transcript: t, signature: [1, 2]), isFalse);
+    expect(
+      await Handshake.verifyAuth(peerPublicKey: pk, peerId: id, transcript: otherT, signature: sig),
+      isFalse,
+    );
+    expect(
+      await Handshake.verifyAuth(peerPublicKey: pk, peerId: 'zzz', transcript: t, signature: sig),
+      isFalse,
+    );
+    expect(
+      await Handshake.verifyAuth(peerPublicKey: pk, peerId: id, transcript: t, signature: [1, 2]),
+      isFalse,
+    );
   });
 
   test('safety number is symmetric, stable and unique per pair', () {
@@ -81,10 +101,20 @@ void main() {
     final pk = (await kp.extractPublicKey()).bytes;
     final id = deviceIdFromPublicKey(pk);
     final ok = HelloCodec.encode(
-        deviceId: id, displayName: 'A', publicKey: pk, ephemeralPublicKey: List.filled(32, 1), nonce: List.filled(16, 2));
+      deviceId: id,
+      displayName: 'A',
+      publicKey: pk,
+      ephemeralPublicKey: List.filled(32, 1),
+      nonce: List.filled(16, 2),
+    );
     expect(HelloCodec.decode(ok).peer.id, id);
     final badEph = HelloCodec.encode(
-        deviceId: id, displayName: 'A', publicKey: pk, ephemeralPublicKey: [1, 2], nonce: List.filled(16, 2));
+      deviceId: id,
+      displayName: 'A',
+      publicKey: pk,
+      ephemeralPublicKey: [1, 2],
+      nonce: List.filled(16, 2),
+    );
     expect(() => HelloCodec.decode(badEph), throwsFormatException);
   });
 

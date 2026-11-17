@@ -17,8 +17,6 @@ class PeerInfo {
   final Uint8List publicKey;
   final String? platform;
 
-  String get idPrefix => id.substring(0, 8);
-
   PeerInfo copyWith({String? displayName}) => PeerInfo(
     id: id,
     displayName: displayName ?? this.displayName,

@@ -97,21 +97,24 @@ class MessagingService extends GetxService {
     final conversationId = conversation.conversation.id;
     final id = _messages.newMessageId();
     final file = await store.adopt(recording.path, conversationId, id);
-    if (file.size > VoiceMeta.maxBytes) {
+    try {
+      if (file.size > VoiceMeta.maxBytes) throw ArgumentError('Recording is too large');
+      await _messages.queueOutgoingVoice(
+        id: id,
+        conversationId: conversationId,
+        receiverId: conversation.peer.id,
+        meta: VoiceMeta(
+          durationMs: recording.durationMs,
+          sizeBytes: file.size,
+          sha256: file.sha256,
+          waveform: VoiceMeta.barsFrom(recording.levels),
+        ),
+      );
+    } catch (_) {
+      // Don't leave audio behind for a message that was never stored.
       await store.deleteMessage(conversationId, id);
-      throw ArgumentError('Recording is too large');
+      rethrow;
     }
-    await _messages.queueOutgoingVoice(
-      id: id,
-      conversationId: conversationId,
-      receiverId: conversation.peer.id,
-      meta: VoiceMeta(
-        durationMs: recording.durationMs,
-        sizeBytes: file.size,
-        sha256: file.sha256,
-        waveform: VoiceMeta.barsFrom(recording.levels),
-      ),
-    );
     _kick(conversation.peer.id);
   }
 
@@ -221,7 +224,9 @@ class MessagingService extends GetxService {
     } catch (e) {
       debugPrint('Sending ACK to ${peer.id} failed: $e');
     }
-    if (payload.type == MessageType.voice) voice?.pull(peer.id).ignore();
+    if (payload.type == MessageType.voice) {
+      voice?.offered(peer.id, conversationId, payload.id).ignore();
+    }
   }
 
   Future<void> _handleAck(PeerInfo peer, Frame frame) async {
@@ -246,7 +251,9 @@ class MessagingService extends GetxService {
         _inFlight.remove(peer.id);
       } else {
         // The ACK may beat the sender's own bookkeeping; see _sendNext.
+        // Late and repeated ACKs land here too, so only recent ones are kept.
         _recentlyAcked.add(id);
+        if (_recentlyAcked.length > 64) _recentlyAcked.remove(_recentlyAcked.first);
       }
     }
     _flush(peer.id);
@@ -291,13 +298,15 @@ class MessagingService extends GetxService {
       );
       await _transport.sendFrame(peerId, Frame(FrameType.message, payload.encode()));
     } catch (e) {
-      // Link trouble: the session will drop and reconnect logic takes over.
       debugPrint('Sending ${next.id} failed: $e');
       await _messages.setStatus(
         next.id,
         DeliveryStatus.pending,
         onlyFrom: {DeliveryStatus.sending},
       );
+      // The link may still be up (a write timed out), so try again shortly
+      // instead of waiting for the next message or reconnect.
+      Timer(const Duration(seconds: 2), () => _flush(peerId));
       return;
     }
 

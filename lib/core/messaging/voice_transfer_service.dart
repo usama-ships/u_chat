@@ -44,6 +44,7 @@ class VoiceTransferService extends GetxService {
   final failed = <String>{}.obs;
 
   final _active = <String, _Pull>{}; // by peer ID
+  final _serving = <String, String>{}; // peer ID by outgoing message ID
   final _starting = <String>{};
 
   /// Fetches the next missing audio from [peerId], if there is any and
@@ -52,18 +53,27 @@ class VoiceTransferService extends GetxService {
     if (_active.containsKey(peerId) || !_transport.isPeerConnected(peerId)) return;
     if (!_starting.add(peerId)) return;
     try {
-      final next = await _nextMissing(peerId);
-      if (next == null) return;
-      final (message, meta) = next;
-      var offset = await _store.partialLength(message.conversationId, message.id);
-      if (offset > meta.sizeBytes) {
-        await _store.discardPartial(message.conversationId, message.id);
-        offset = 0;
+      while (true) {
+        final next = await _nextMissing(peerId);
+        if (next == null) return;
+        final (message, meta) = next;
+        var offset = await _store.partialLength(message.conversationId, message.id);
+        // The app stopped after the last chunk but before checking it.
+        if (offset == meta.sizeBytes &&
+            await _store.completePartial(message.conversationId, message.id, meta)) {
+          _sendDone(peerId, message.id);
+          continue;
+        }
+        if (offset >= meta.sizeBytes) {
+          await _store.discardPartial(message.conversationId, message.id);
+          offset = 0;
+        }
+        final pull = _Pull(peerId, message, meta, offset);
+        _active[peerId] = pull;
+        _setProgress(message.id, offset, meta.sizeBytes);
+        _request(pull);
+        return;
       }
-      final pull = _Pull(peerId, message, meta, offset);
-      _active[peerId] = pull;
-      _setProgress(message.id, offset, meta.sizeBytes);
-      _request(pull);
     } finally {
       _starting.remove(peerId);
     }
@@ -82,6 +92,21 @@ class VoiceTransferService extends GetxService {
     }
     return null;
   }
+
+  /// A voice message arrived from [peerId], new or repeated. If its audio is
+  /// already here, the sender missed our VoiceDone, so it's sent again.
+  /// Otherwise the audio is fetched.
+  Future<void> offered(String peerId, String conversationId, String messageId) async {
+    if (_store.hasAudio(conversationId, messageId)) {
+      _sendDone(peerId, messageId);
+    } else {
+      await pull(peerId);
+    }
+  }
+
+  void _sendDone(String peerId, String messageId) => _transport
+      .sendFrame(peerId, Frame(FrameType.voiceDone, VoiceDone(messageId).encode()))
+      .catchError((Object e) => debugPrint('Sending voice done failed: $e'));
 
   /// Tries a failed download again.
   Future<void> retry(Message message) async {
@@ -124,6 +149,11 @@ class VoiceTransferService extends GetxService {
   /// [pull] continues from there.
   void onPeerLost(String peerId) {
     _active.remove(peerId)?.timer?.cancel();
+    // Audio we were sending them: drop the ring until they ask again.
+    _serving.removeWhere((id, to) {
+      if (to == peerId) progress.remove(id);
+      return to == peerId;
+    });
   }
 
   /// Handles a voice frame. Await this to keep a peer's frames in order.
@@ -166,6 +196,7 @@ class VoiceTransferService extends GetxService {
       request.offset,
       VoiceChunk.maxBytes,
     );
+    _serving[message.id] = peerId;
     _setProgress(message.id, request.offset + (bytes?.length ?? 0), meta.sizeBytes);
     // Not awaited: the write takes a while and mustn't hold up incoming frames.
     _transport
@@ -181,6 +212,7 @@ class VoiceTransferService extends GetxService {
 
   Future<void> _finishSending(String peerId, VoiceDone done) async {
     await _messages.markDelivered(done.id, peerId);
+    _serving.remove(done.id);
     progress.remove(done.id);
   }
 
@@ -228,9 +260,7 @@ class VoiceTransferService extends GetxService {
     pull.timer?.cancel();
     _active.remove(peerId);
     progress.remove(message.id);
-    _transport
-        .sendFrame(peerId, Frame(FrameType.voiceDone, VoiceDone(message.id).encode()))
-        .catchError((Object e) => debugPrint('Sending voice done failed: $e'));
+    _sendDone(peerId, message.id);
     _pullNext(peerId);
   }
 

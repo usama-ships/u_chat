@@ -201,11 +201,7 @@ class _PresenceChip extends GetView<HomeController> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            PulseDot(
-              active: active,
-              size: 7,
-              color: active ? AppColors.highlight : AppColors.onHeaderMuted,
-            ),
+            PulseDot(active: active, size: 7, color: AppColors.highlight),
             const SizedBox(width: 8),
             Flexible(
               child: AnimatedSwitcher(

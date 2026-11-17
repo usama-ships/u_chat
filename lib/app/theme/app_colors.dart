@@ -14,7 +14,6 @@ import 'package:flutter/material.dart';
 abstract final class AppColors {
   // Sheets and surfaces, back to front.
   static const bg = Color(0xFFF7F7F7);
-  static const bgElevated = Color(0xFFFFFFFF); // composer, banners
   static const surface = Color(0xFFFFFFFF); // cards
   static const surfaceRaised = Color(0xFFFFFFFF); // dialogs, sheets
   static const surfaceHigh = Color(0xFFEFEDF8); // pressed rows, chips
@@ -29,7 +28,7 @@ abstract final class AppColors {
   static const headerTop = Color(0xFF7768D0);
   static const headerBottom = Color(0xFF6A5BC2);
   static const onHeader = Color(0xFFFFFFFF);
-  static const onHeaderMuted = Color(0xC7FFFFFF);
+  static const onHeaderMuted = Color(0xE0FFFFFF);
 
   /// Frosted circles and chips on the purple header.
   static const headerGlass = Color(0x29FFFFFF);
@@ -58,12 +57,11 @@ abstract final class AppColors {
   // Text.
   static const text = Color(0xFF1A1A1A);
   static const textSecondary = Color(0xFF4B4B57);
-  static const textMuted = Color(0xFF8A8A99);
+  static const textMuted = Color(0xFF6E6E7D);
   static const textFaint = Color(0xFFB9B9C6);
 
   // Accent.
   static const accent = Color(0xFF6A5BC2);
-  static const accentLight = Color(0xFF6A5BC2); // accent text and icons on light
   static const accentDeep = Color(0xFF5546AE);
   static const violet = Color(0xFF8A7BE0);
   static const accentSoft = Color(0x1F6A5BC2); // tinted backgrounds

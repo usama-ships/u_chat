@@ -89,10 +89,8 @@ abstract final class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 10,
         shadowColor: const Color(0x406A5BC2),
-        textStyle: const TextStyle(
-          color: AppColors.text,
-          fontFamily: _fontFamily,
-          fontWeight: FontWeight.w600,
+        labelTextStyle: const WidgetStatePropertyAll(
+          TextStyle(color: AppColors.text, fontFamily: _fontFamily, fontWeight: FontWeight.w600),
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),

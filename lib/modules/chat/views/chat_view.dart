@@ -89,10 +89,7 @@ class _ChatTitle extends GetView<ChatController> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     // Two lines in a fixed-height bar: the text grows only a little.
-    return MediaQuery.withClampedTextScaling(
-      maxScaleFactor: 1.2,
-      child: _title(theme),
-    );
+    return MediaQuery.withClampedTextScaling(maxScaleFactor: 1.2, child: _title(theme));
   }
 
   Widget _title(ThemeData theme) {
@@ -543,14 +540,7 @@ class _Composer extends GetView<ChatController> {
     return Obx(
       () => AnimatedSwitcher(
         duration: Motion.medium,
-        switchInCurve: Motion.ease,
-        transitionBuilder: (child, animation) => FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: Tween(begin: const Offset(0, 0.25), end: Offset.zero).animate(animation),
-            child: child,
-          ),
-        ),
+        transitionBuilder: fadeLiftTransition,
         child: controller.recordingMode.value == RecordingMode.locked
             ? const _BottomBar(key: ValueKey('note'), child: VoiceNoteCard())
             : const _ComposerRow(key: ValueKey('row')),
@@ -583,12 +573,8 @@ class _ComposerRow extends GetView<ChatController> {
           Obx(() {
             final mode = controller.recordingMode.value;
             final Widget button;
-            if (mode == RecordingMode.locked) {
-              button = _SendButton(
-                key: const ValueKey('send'),
-                onPressed: controller.finishRecording,
-              );
-            } else if (mode == RecordingMode.idle && controller.canSend.value) {
+            // A locked recording swaps in the VoiceNoteCard, so it isn't handled here.
+            if (mode == RecordingMode.idle && controller.canSend.value) {
               button = _SendButton(
                 key: const ValueKey('send'),
                 onPressed: controller.isSending.value ? null : controller.send,

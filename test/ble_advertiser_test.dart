@@ -3,7 +3,8 @@ import 'package:u_chat/core/bluetooth/ble_advertiser.dart';
 
 void main() {
   test('extracts the Android error code from the plugin exception text', () {
-    const raw = 'PlatformException(IllegalStateException, java.lang.IllegalStateException: '
+    const raw =
+        'PlatformException(IllegalStateException, java.lang.IllegalStateException: '
         'Start advertising failed with error code: 3, Cause: null, Stacktrace: ...)';
     expect(BleAdvertiser.errorCode(raw), 3);
     expect(BleAdvertiser.errorCode('something else'), isNull);

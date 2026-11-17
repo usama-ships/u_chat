@@ -303,6 +303,29 @@ void main() {
       expect(chunks.length, 4);
     });
 
+    test('a lost "got it" is recovered on the next connection', () async {
+      a.wire.connect();
+      // Bob gets all the audio, but his confirmation never reaches Alice.
+      b.wire.filter = (f) {
+        if (f.type != FrameType.voiceDone) return f;
+        scheduleMicrotask(a.wire.disconnect);
+        return null;
+      };
+      final bytes = await a.sendVoiceTo(b, 20000);
+      await until(() async => !a.wire.connected);
+      await settle(50);
+      final received = await receivedMessage();
+      expect(await receivedFile(received).readAsBytes(), bytes);
+      expect(await delivered(), isFalse);
+      expect(a.voice.progress, isEmpty, reason: 'no ring left spinning after the drop');
+
+      b.wire.filter = null;
+      a.wire.connect();
+      await until(delivered);
+      final chunks = a.wire.sent.where((f) => f.type == FrameType.voiceChunk);
+      expect(chunks.length, 3, reason: 'the audio is not sent a second time');
+    });
+
     test('stays out of delivered until the audio is all there', () async {
       a.wire.connect();
       // The receiver never gets chunks, so it can never finish.
@@ -381,9 +404,7 @@ void main() {
 
       frozen = false;
       b.wire.inject(held!);
-      await until(
-        () async => (await a.messages.find(note.id))!.status == DeliveryStatus.delivered,
-      );
+      await until(() async => (await a.messages.find(note.id))!.status == DeliveryStatus.delivered);
       final received = (await b.messagesWith(a)).firstWhere((m) => m.id == note.id);
       expect(await receivedFile(received).readAsBytes(), audio);
     });

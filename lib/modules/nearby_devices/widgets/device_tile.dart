@@ -146,11 +146,7 @@ class _Tag extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: const TextStyle(
-          color: AppColors.accentLight,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-        ),
+        style: const TextStyle(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -180,7 +176,7 @@ class _SignalBars extends StatelessWidget {
                 height: 3.0 + i * 3,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(1),
-                  color: i <= bars ? AppColors.accentLight : AppColors.glassBorder,
+                  color: i <= bars ? AppColors.accent : AppColors.textFaint,
                 ),
               ),
           ],

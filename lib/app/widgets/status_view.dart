@@ -74,7 +74,7 @@ class _Badge extends StatelessWidget {
       width: 84,
       height: 84,
       decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.accentSoft),
-      child: Icon(icon, size: 36, color: AppColors.accentLight),
+      child: Icon(icon, size: 36, color: AppColors.accent),
     );
   }
 }

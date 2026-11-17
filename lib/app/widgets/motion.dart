@@ -77,10 +77,11 @@ class _EntranceState extends State<Entrance> with SingleTickerProviderStateMixin
 /// Spreads the [Entrance] of list items over time when a list first appears.
 /// Items that scroll in later come in with no delay.
 class Stagger {
-  Stagger({this.step = const Duration(milliseconds: 55), this.maxItems = 9});
+  Stagger({this.step = const Duration(milliseconds: 55)});
+
+  static const maxItems = 9;
 
   final Duration step;
-  final int maxItems;
   final _start = DateTime.now();
 
   Duration delayFor(int index) {
@@ -157,7 +158,7 @@ class PulseDot extends StatelessWidget {
   final Color color;
   final double size;
 
-  /// When false the dot sits still in a dimmed grey.
+  /// When false the dot sits still, faded.
   final bool active;
 
   @override
@@ -168,7 +169,7 @@ class PulseDot extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: active ? color : AppColors.textFaint,
+        color: active ? color : color.withValues(alpha: 0.4),
       ),
     );
     return SizedBox(

@@ -105,10 +105,10 @@ class Phone {
   }
 
   PeerInfo get info => PeerInfo(
-        id: identity.deviceId,
-        displayName: name,
-        publicKey: Uint8List.fromList(identity.publicKey.bytes),
-      );
+    id: identity.deviceId,
+    displayName: name,
+    publicKey: Uint8List.fromList(identity.publicKey.bytes),
+  );
 
   Future<void> start() async {
     messaging = MessagingService(
@@ -283,7 +283,9 @@ void main() {
   test('a deleted conversation comes back when the contact writes again', () async {
     a.transport.connect();
     await settle(30);
-    await b.conversations.deleteConversation(b.conversations.conversationIdForPeer(a.identity.deviceId));
+    await b.conversations.deleteConversation(
+      b.conversations.conversationIdForPeer(a.identity.deviceId),
+    );
     await a.messaging.sendText(await a.chatWith(b), 'still there?');
     await settle();
     expect((await b.messagesWith(a)).single.content, 'still there?');
@@ -303,14 +305,17 @@ void main() {
     final policy = PeerPolicy(b.conversations, settings);
     final stranger = (await Phone.create('Stranger')).info;
 
-    expect(await policy.admit(stranger), isTrue); // default: accept new devices
+    expect(await policy.admit(stranger, outgoing: false), isTrue); // default: accept new devices
     await settings.setAcceptUnknownDevices(false);
-    expect(await policy.admit(stranger), isFalse);
+    expect(await policy.admit(stranger, outgoing: false), isFalse);
+    // A device the user taps in Nearby is let through.
+    expect(await policy.admit(stranger, outgoing: true), isTrue);
 
     await b.chatWith(a); // Alice becomes a known contact
-    expect(await policy.admit(a.info), isTrue);
+    expect(await policy.admit(a.info, outgoing: false), isTrue);
     await b.conversations.setBlocked(a.identity.deviceId, true);
-    expect(await policy.admit(a.info), isFalse);
+    expect(await policy.admit(a.info, outgoing: false), isFalse);
+    expect(await policy.admit(a.info, outgoing: true), isFalse, reason: 'blocked both ways');
   });
 
   test('protocol rejects malformed payloads', () {

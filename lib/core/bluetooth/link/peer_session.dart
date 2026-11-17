@@ -263,12 +263,15 @@ class PeerSession {
       transcript: transcript,
       signature: body,
     );
+    if (state == SessionState.closed) return; // the link dropped meanwhile
     if (!valid) {
       await close('identity proof failed', disconnect: true);
       return;
     }
     final check = admit;
-    if (check != null && !await check(hello.peer)) {
+    final allowed = check == null || await check(hello.peer);
+    if (state == SessionState.closed) return;
+    if (!allowed) {
       closedLocally = true;
       // Tell the peer not to reconnect, then hang up.
       state = SessionState.ready;

@@ -21,7 +21,7 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = dense ? 38.0 : 52.0;
+    final height = dense ? 40.0 : 52.0;
     final enabled = onPressed != null;
     return Pressable(
       onTap: onPressed,
@@ -71,7 +71,7 @@ class SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = dense ? 38.0 : 52.0;
+    final height = dense ? 40.0 : 52.0;
     return Pressable(
       onTap: onPressed,
       pressedScale: 0.96,
@@ -139,7 +139,7 @@ class BusySpinner extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: const CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.accentLight),
+      child: const CircularProgressIndicator(strokeWidth: 2.2, color: AppColors.accent),
     );
   }
 }

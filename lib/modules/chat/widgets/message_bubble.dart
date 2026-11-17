@@ -172,16 +172,14 @@ class _Bubble extends StatelessWidget {
     final outgoing = message.isOutgoing;
     const full = Radius.circular(22);
     const tight = Radius.circular(8);
-    final radius =
-        BorderRadius.only(
-          topLeft: !outgoing && groupedWithPrevious ? tight : full,
-          topRight: outgoing && groupedWithPrevious ? tight : full,
-          bottomLeft: !outgoing ? tight : full,
-          bottomRight: outgoing ? tight : full,
-        ).copyWith(
-          bottomLeft: !outgoing && !groupedWithNext ? const Radius.circular(6) : null,
-          bottomRight: outgoing && !groupedWithNext ? const Radius.circular(6) : null,
-        );
+    // The corner nearest the sender points at them, sharpest on the last message.
+    final tail = Radius.circular(groupedWithNext ? 8 : 6);
+    final radius = BorderRadius.only(
+      topLeft: !outgoing && groupedWithPrevious ? tight : full,
+      topRight: outgoing && groupedWithPrevious ? tight : full,
+      bottomLeft: outgoing ? full : tail,
+      bottomRight: outgoing ? tail : full,
+    );
     final ink = outgoing ? AppColors.onAccent : AppColors.text;
     final meta = outgoing ? AppColors.onAccent.withValues(alpha: 0.72) : AppColors.textMuted;
     final voice = _voiceMeta(message);

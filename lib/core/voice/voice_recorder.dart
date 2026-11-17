@@ -69,6 +69,7 @@ class DeviceVoiceRecorder implements VoiceRecorder {
     final dir = await getTemporaryDirectory();
     final path = p.join(dir.path, 'voice-${DateTime.now().microsecondsSinceEpoch}.m4a');
     _captured.clear();
+    await _amplitude?.cancel();
     _amplitude = _recorder.onAmplitudeChanged(const Duration(milliseconds: 80)).listen((amplitude) {
       final level = ((amplitude.current - _floorDb) / -_floorDb).clamp(0.0, 1.0);
       // A curve lifts quiet speech, so the waveform doesn't look flat.
@@ -76,7 +77,12 @@ class DeviceVoiceRecorder implements VoiceRecorder {
       _captured.add(shaped);
       _levels.add(shaped);
     });
-    await _recorder.start(_config, path: path);
+    try {
+      await _recorder.start(_config, path: path);
+    } catch (_) {
+      await _amplitude?.cancel();
+      rethrow;
+    }
     _clock
       ..reset()
       ..start();
@@ -109,6 +115,8 @@ class DeviceVoiceRecorder implements VoiceRecorder {
   @override
   Future<void> dispose() async {
     await _amplitude?.cancel();
+    // Closing mid-recording throws the unsent audio away.
+    if (await _recorder.isRecording()) await cancel();
     await _levels.close();
     await _recorder.dispose();
   }

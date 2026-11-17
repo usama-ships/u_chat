@@ -49,37 +49,26 @@ class Panel extends StatelessWidget {
 
 /// The bar on the purple header: white title and icons, no fill of its own.
 class TopBar extends StatelessWidget implements PreferredSizeWidget {
-  const TopBar({
-    super.key,
-    required this.title,
-    this.actions = const [],
-    this.height = 60,
-    this.showBack = true,
-    this.centerTitle = false,
-    this.bottom,
-  });
+  const TopBar({super.key, required this.title, this.actions = const [], this.centerTitle = false});
 
   /// Convenience for a plain text title.
-  factory TopBar.text(String text, {Key? key, List<Widget> actions = const [], Widget? bottom}) =>
-      TopBar(key: key, title: _BarTitle(text), actions: actions, bottom: bottom);
+  factory TopBar.text(String text, {Key? key, List<Widget> actions = const []}) =>
+      TopBar(key: key, title: _BarTitle(text), actions: actions);
+
+  static const height = 60.0;
 
   final Widget title;
   final List<Widget> actions;
-  final double height;
-  final bool showBack;
 
   /// Centres [title] between the back button and the actions, as in chats.
   final bool centerTitle;
 
-  /// Thin widget along the lower edge, such as a progress line.
-  final Widget? bottom;
-
   @override
-  Size get preferredSize => Size.fromHeight(height);
+  Size get preferredSize => const Size.fromHeight(height);
 
   @override
   Widget build(BuildContext context) {
-    final canPop = showBack && (ModalRoute.of(context)?.canPop ?? false);
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
     final gutter = Responsive.gutter(context);
     final back = canPop
         ? RoundIconButton(
@@ -117,18 +106,12 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
     return OnHeader(
       child: SafeArea(
         bottom: false,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            SizedBox(
-              height: height,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: canPop ? gutter - 8 : gutter),
-                child: row,
-              ),
-            ),
-            ?bottom,
-          ],
+        child: SizedBox(
+          height: height,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: canPop ? gutter - 8 : gutter),
+            child: row,
+          ),
         ),
       ),
     );
@@ -176,21 +159,21 @@ class _BarTitle extends StatelessWidget {
   }
 }
 
-/// Icon button with a 44px touch target and a soft round highlight on press.
+/// Round icon button with a 44px touch target that shrinks a little on press.
 class RoundIconButton extends StatelessWidget {
   const RoundIconButton({
     super.key,
     required this.icon,
     required this.tooltip,
     required this.onPressed,
-    this.size = 44,
     this.filled = false,
   });
+
+  static const size = 44.0;
 
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
-  final double size;
 
   /// Gives the button a frosted background.
   final bool filled;
@@ -261,7 +244,7 @@ class Section extends StatelessWidget {
 
 /// Tinted rounded square that holds a row's icon.
 class IconChip extends StatelessWidget {
-  const IconChip({super.key, required this.icon, this.color = AppColors.accentLight});
+  const IconChip({super.key, required this.icon, this.color = AppColors.accent});
 
   final IconData icon;
   final Color color;
@@ -291,7 +274,7 @@ class ListRow extends StatelessWidget {
     super.key,
     required this.title,
     this.icon,
-    this.iconColor = AppColors.accentLight,
+    this.iconColor = AppColors.accent,
     this.titleColor,
     this.subtitle,
     this.subtitleWidget,
@@ -379,7 +362,7 @@ class SwitchRow extends StatelessWidget {
       child: ListRow(
         title: title,
         icon: icon,
-        iconColor: value ? AppColors.accentLight : AppColors.textMuted,
+        iconColor: value ? AppColors.accent : AppColors.textMuted,
         subtitle: subtitle,
         onTap: () => onChanged(!value),
         trailing: Switch(value: value, onChanged: onChanged),
@@ -390,16 +373,15 @@ class SwitchRow extends StatelessWidget {
 
 /// Small rounded label, such as the day separator in a chat.
 class Pill extends StatelessWidget {
-  const Pill({super.key, required this.child, this.padding});
+  const Pill({super.key, required this.child});
 
   final Widget child;
-  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
     return Panel(
       radius: 100,
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       child: child,
     );
   }

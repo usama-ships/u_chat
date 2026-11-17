@@ -27,7 +27,7 @@ class VoiceBubble extends GetView<ChatController> {
   Widget build(BuildContext context) {
     final outgoing = message.isOutgoing;
     final ink = outgoing ? AppColors.onAccent.withValues(alpha: 0.75) : AppColors.textSecondary;
-    final playedColor = outgoing ? AppColors.onAccent : AppColors.accentLight;
+    final playedColor = outgoing ? AppColors.onAccent : AppColors.accent;
 
     return SizedBox(
       width: _width(context),
@@ -242,7 +242,7 @@ class _PlayButton extends StatelessWidget {
                     value: value,
                     strokeWidth: 2.4,
                     strokeCap: StrokeCap.round,
-                    color: outgoing ? AppColors.onAccent : AppColors.accentLight,
+                    color: outgoing ? AppColors.onAccent : AppColors.accent,
                     backgroundColor: (outgoing ? AppColors.onAccent : AppColors.textFaint)
                         .withValues(alpha: 0.25),
                   ),

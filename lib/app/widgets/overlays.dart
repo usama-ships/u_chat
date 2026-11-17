@@ -14,20 +14,25 @@ Future<T?> showAppDialog<T>(BuildContext context, WidgetBuilder builder) {
     barrierLabel: 'Dismiss',
     barrierColor: const Color(0xFF1A1A2E).withValues(alpha: 0.45),
     transitionDuration: Motion.medium,
-    pageBuilder: (context, _, _) => SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Material(
-              type: MaterialType.transparency,
-              child: Panel(
-                radius: 28,
-                color: AppColors.surfaceRaised,
-                shadow: true,
-                padding: const EdgeInsets.all(22),
-                child: builder(context),
+    // Lifts the dialog above the keyboard, as Material's Dialog does.
+    pageBuilder: (context, _, _) => AnimatedPadding(
+      duration: Motion.fast,
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Material(
+                type: MaterialType.transparency,
+                child: Panel(
+                  radius: 28,
+                  color: AppColors.surfaceRaised,
+                  shadow: true,
+                  padding: const EdgeInsets.all(22),
+                  child: builder(context),
+                ),
               ),
             ),
           ),
@@ -77,8 +82,10 @@ Future<bool> showConfirm(
             const SizedBox(width: 10),
             Expanded(
               child: destructive
-                  ? _DangerButton(
+                  ? SecondaryButton(
                       label: confirmLabel,
+                      dense: true,
+                      color: AppColors.danger,
                       onPressed: () => Navigator.pop(context, true),
                     )
                   : PrimaryButton(
@@ -93,23 +100,6 @@ Future<bool> showConfirm(
     );
   });
   return result ?? false;
-}
-
-class _DangerButton extends StatelessWidget {
-  const _DangerButton({required this.label, required this.onPressed});
-
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SecondaryButton(
-      label: label,
-      dense: true,
-      color: AppColors.danger,
-      onPressed: onPressed,
-    );
-  }
 }
 
 /// Bottom sheet of actions.

@@ -61,14 +61,20 @@ void main() {
     final r = Reassembler();
     expect(() => r.add(Uint8List(3)), throwsA(isA<PacketFormatException>()));
     // wrong version
-    expect(() => r.add(Uint8List.fromList([0x23, 0, 0, 0, 0, 0, 1, 9])),
-        throwsA(isA<PacketFormatException>()));
+    expect(
+      () => r.add(Uint8List.fromList([0x23, 0, 0, 0, 0, 0, 1, 9])),
+      throwsA(isA<PacketFormatException>()),
+    );
     // index >= total
-    expect(() => r.add(Uint8List.fromList([0x13, 0, 0, 0, 2, 0, 1, 9])),
-        throwsA(isA<PacketFormatException>()));
+    expect(
+      () => r.add(Uint8List.fromList([0x13, 0, 0, 0, 2, 0, 1, 9])),
+      throwsA(isA<PacketFormatException>()),
+    );
     // total == 0
-    expect(() => r.add(Uint8List.fromList([0x13, 0, 0, 0, 0, 0, 0, 9])),
-        throwsA(isA<PacketFormatException>()));
+    expect(
+      () => r.add(Uint8List.fromList([0x13, 0, 0, 0, 0, 0, 0, 9])),
+      throwsA(isA<PacketFormatException>()),
+    );
   });
 
   test('rejects frames over the size limit', () {
