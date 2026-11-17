@@ -65,6 +65,17 @@ class FakeIdentity extends IdentityService {
 /// `onInit` doesn't run and nothing touches the radio.
 class FakeBluetooth extends BluetoothService {
   FakeBluetooth(super.identity, super.settings);
+
+  /// Completed by a test to finish a connect attempt.
+  Completer<bool>? pendingConnect;
+  int connectCalls = 0;
+
+  @override
+  Future<bool> connectToKnownPeer(String peerId, {Duration timeout = Duration.zero}) {
+    connectCalls++;
+    pendingConnect = Completer<bool>();
+    return pendingConnect!.future;
+  }
 }
 
 class Fixture {
@@ -401,8 +412,8 @@ Future<void> pumpScreen(
   await tester.pumpWidget(
     GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      theme: AppTheme.light,
+      themeMode: ThemeMode.light,
       home: screen,
       // Above the Navigator, so shots include dialogs and sheets.
       builder: (context, child) => RepaintBoundary(key: shotKey, child: child!),

@@ -7,7 +7,7 @@ import '../../../core/voice/voice_meta.dart';
 
 /// A voice note drawn as a radar signal: bars mirrored around a centre line.
 /// While playing, a scan head sweeps across and turns the bars behind it
-/// bronze, the same way the Nearby radar lights up what it passes.
+/// bright, the same way the Nearby radar lights up what it passes.
 class SignalTrace extends StatelessWidget {
   const SignalTrace({
     super.key,
@@ -128,7 +128,7 @@ class _TracePainter extends CustomPainter {
 
 /// The trace while recording: newest sound enters at the right and scrolls left.
 class LiveTrace extends StatelessWidget {
-  const LiveTrace({super.key, required this.levels, this.color = AppColors.bronze300});
+  const LiveTrace({super.key, required this.levels, this.color = AppColors.accentLight});
 
   final List<double> levels;
   final Color color;

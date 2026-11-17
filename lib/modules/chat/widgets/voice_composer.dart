@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_motion.dart';
-import '../../../app/widgets/glass.dart';
+import '../../../app/widgets/surfaces.dart';
 import '../../../app/widgets/motion.dart';
+import '../../../app/widgets/pressable.dart';
 import '../../../core/voice/voice_meta.dart';
 import '../controllers/chat_controller.dart';
 import 'signal_trace.dart';
@@ -85,18 +86,16 @@ class _MicButtonState extends State<MicButton> {
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: recording ? AppColors.bronzeMetal : AppColors.silverMetal,
+                gradient: AppColors.accentGradient,
                 boxShadow: [
                   BoxShadow(
-                    color: (recording ? AppColors.bronze400 : AppColors.silver300).withValues(
-                      alpha: recording ? 0.5 : 0.22,
-                    ),
+                    color: AppColors.accent.withValues(alpha: recording ? 0.5 : 0.22),
                     blurRadius: recording ? 22 : 14,
                     offset: const Offset(0, 3),
                   ),
                 ],
               ),
-              child: const Icon(Icons.mic_rounded, size: 23, color: AppColors.graphite900),
+              child: const Icon(Icons.mic_rounded, size: 23, color: AppColors.onAccent),
             ),
           );
         }),
@@ -112,10 +111,11 @@ class RecordingPanel extends GetView<ChatController> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassPanel(
-      radius: 24,
-      shadow: false,
-      rim: AppColors.bronzeRim,
+    return Panel(
+      radius: 26,
+      color: AppColors.surface,
+      shadow: true,
+      borderColor: AppColors.accentBorder,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       child: SizedBox(
         height: 48,
@@ -135,17 +135,17 @@ class RecordingPanel extends GetView<ChatController> {
                     label: 'Discard recording',
                     child: const Padding(
                       padding: EdgeInsets.all(6),
-                      child: Icon(Icons.delete_outline_rounded, size: 22, color: AppColors.clay),
+                      child: Icon(Icons.delete_outline_rounded, size: 22, color: AppColors.danger),
                     ),
                   ),
                 )
               else
-                const PulseDot(size: 8),
+                const PulseDot(size: 8, color: AppColors.danger),
               const SizedBox(width: 4),
               Text(
                 formatVoiceDuration(controller.recordingMs.value),
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: nearLimit ? AppColors.clay : AppColors.silver100,
+                  color: nearLimit ? AppColors.danger : AppColors.text,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
@@ -167,11 +167,13 @@ class RecordingPanel extends GetView<ChatController> {
                         const Icon(
                           Icons.chevron_left_rounded,
                           size: 18,
-                          color: AppColors.silver300,
+                          color: AppColors.textSecondary,
                         ),
                         Text(
                           'Cancel',
-                          style: theme.textTheme.labelMedium?.copyWith(color: AppColors.silver300),
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -183,7 +185,7 @@ class RecordingPanel extends GetView<ChatController> {
                   child: Icon(
                     drag.lock > 0 ? Icons.lock_rounded : Icons.lock_open_rounded,
                     size: 17,
-                    color: Color.lerp(AppColors.silver400, AppColors.bronze300, drag.lock),
+                    color: Color.lerp(AppColors.textMuted, AppColors.accentLight, drag.lock),
                     semanticLabel: 'Slide up to lock',
                   ),
                 ),
@@ -192,6 +194,173 @@ class RecordingPanel extends GetView<ChatController> {
             ],
           );
         }),
+      ),
+    );
+  }
+}
+
+/// The hands-free recorder: a card that rises over the composer once a
+/// recording is locked, with a big trace, the time, and discard / send.
+class VoiceNoteCard extends GetView<ChatController> {
+  const VoiceNoteCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Panel(
+      radius: 30,
+      color: AppColors.surface,
+      shadow: true,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      child: Obx(() {
+        final remaining = VoiceMeta.maxRecordingMs - controller.recordingMs.value;
+        final nearLimit = remaining < 10000;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'Voice ',
+                    style: theme.textTheme.titleMedium?.copyWith(color: AppColors.text),
+                  ),
+                  TextSpan(
+                    text: 'Note',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            ExcludeSemantics(
+              child: SizedBox(
+                height: 28,
+                child: LiveTrace(levels: controller.liveLevels.toList(), color: AppColors.accent),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const PulseDot(size: 7, color: AppColors.danger),
+                const SizedBox(width: 6),
+                Text(
+                  formatVoiceDuration(controller.recordingMs.value),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: nearLimit ? AppColors.danger : AppColors.textSecondary,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _CardAction(
+                  icon: Icons.delete_outline_rounded,
+                  tooltip: 'Discard recording',
+                  color: AppColors.textSecondary,
+                  onTap: controller.cancelRecording,
+                ),
+                const _RecordingOrb(),
+                _CardAction(
+                  icon: Icons.send_rounded,
+                  tooltip: 'Send',
+                  color: AppColors.accent,
+                  onTap: controller.finishRecording,
+                ),
+              ],
+            ),
+          ],
+        );
+      }),
+    );
+  }
+}
+
+class _CardAction extends StatelessWidget {
+  const _CardAction({
+    required this.icon,
+    required this.tooltip,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Pressable(
+        onTap: onTap,
+        pressedScale: 0.88,
+        semanticLabel: tooltip,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: 0.08)),
+          child: Icon(icon, size: 22, color: color),
+        ),
+      ),
+    );
+  }
+}
+
+/// The big lavender mic in the middle, breathing while it listens.
+class _RecordingOrb extends StatelessWidget {
+  const _RecordingOrb();
+
+  @override
+  Widget build(BuildContext context) {
+    final core = Container(
+      width: 62,
+      height: 62,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: AppColors.accentGradient,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accent.withValues(alpha: 0.4),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: const Icon(Icons.mic_rounded, size: 28, color: AppColors.onAccent),
+    );
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: 92,
+        height: 92,
+        child: Looping(
+          period: const Duration(milliseconds: 1600),
+          reverse: true,
+          restingValue: 0.5,
+          child: core,
+          builder: (context, value, child) => Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 74 + 18 * value,
+                height: 74 + 18 * value,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.accent.withValues(alpha: 0.10 - 0.05 * value),
+                ),
+              ),
+              child!,
+            ],
+          ),
+        ),
       ),
     );
   }

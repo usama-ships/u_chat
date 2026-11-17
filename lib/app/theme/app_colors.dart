@@ -1,87 +1,95 @@
 import 'package:flutter/material.dart';
 
-/// The whole app is built from three tones:
+/// Lavender Glass: a soft purple header over light, frosted sheets.
 ///
-/// * **Graphite**: the dark base everything sits on.
-/// * **Silver**: glass, metal and text.
-/// * **Bronze**: a muted champagne, used only for things that deserve
-///   attention (unread, connected, active). [clay] is its deep shade, kept
-///   for errors and destructive actions.
+/// Four tones carry the whole app:
+///   * Mist `#F7F7F7`: the sheets everything sits on.
+///   * Ink `#1A1A1A`: text.
+///   * Lavender `#6A5BC2`: the header, your own messages and every main action.
+///   * Lemon `#F4F185`: one highlight at a time, such as the selected filter.
+///
+/// Glass is a translucent white fill with a bright edge over a still
+/// background, so it costs nothing extra per frame. Green means online and
+/// pink-red means unread or a problem.
 abstract final class AppColors {
-  // Graphite
-  static const graphite950 = Color(0xFF0C0E12);
-  static const graphite900 = Color(0xFF12151A);
-  static const graphite800 = Color(0xFF1A1E25);
-  static const graphite700 = Color(0xFF252B33);
-  static const graphite600 = Color(0xFF343B45);
+  // Sheets and surfaces, back to front.
+  static const bg = Color(0xFFF7F7F7);
+  static const bgElevated = Color(0xFFFFFFFF); // composer, banners
+  static const surface = Color(0xFFFFFFFF); // cards
+  static const surfaceRaised = Color(0xFFFFFFFF); // dialogs, sheets
+  static const surfaceHigh = Color(0xFFEFEDF8); // pressed rows, chips
 
-  // Silver
-  static const silver100 = Color(0xFFEDEFF3);
-  static const silver200 = Color(0xFFD5D9E0);
-  static const silver300 = Color(0xFFB6BCC7);
-  static const silver400 = Color(0xFF8E96A3);
-  static const silver500 = Color(0xFF6B7380);
+  /// The other person's message bubbles.
+  static const bubbleIn = Color(0xFFFFFFFF);
 
-  // Bronze
-  static const bronze300 = Color(0xFFDCC3A1);
-  static const bronze400 = Color(0xFFC9A77C);
-  static const bronze500 = Color(0xFFA8845A);
-  static const bronze700 = Color(0xFF6E5233);
-  static const clay = Color(0xFFC27A5E);
+  /// Bottom of the chat sheet, tinted towards lavender.
+  static const chatBottom = Color(0xFFF1EFFA);
 
-  /// Polished metal: primary buttons, the send button.
-  static const silverMetal = LinearGradient(
+  // Header.
+  static const headerTop = Color(0xFF7768D0);
+  static const headerBottom = Color(0xFF6A5BC2);
+  static const onHeader = Color(0xFFFFFFFF);
+  static const onHeaderMuted = Color(0xC7FFFFFF);
+
+  /// Frosted circles and chips on the purple header.
+  static const headerGlass = Color(0x29FFFFFF);
+  static const headerGlassBorder = Color(0x3DFFFFFF);
+
+  // Glass on the light sheets.
+  static const glassTop = Color(0xE6FFFFFF);
+  static const glassBottom = Color(0xB3FFFFFF);
+  static const glassBorder = Color(0x1A6A5BC2);
+
+  /// Fill of a glass panel: brighter at the top-left, like light on glass.
+  static const glassFill = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFF1F3F6), Color(0xFFBEC4CE), Color(0xFFE2E5EA), Color(0xFF9CA4B1)],
-    stops: [0, 0.42, 0.62, 1],
+    colors: [glassTop, glassBottom],
   );
 
-  /// Outgoing message bubbles: softer than [silverMetal] so text stays calm.
-  static const silverBubble = LinearGradient(
+  /// The soft lavender shadow under floating glass.
+  static const glassShadow = [
+    BoxShadow(color: Color(0x146A5BC2), blurRadius: 24, offset: Offset(0, 8)),
+  ];
+
+  static const border = Color(0x0F1A1A1A);
+  static const borderStrong = Color(0x1F1A1A1A);
+
+  // Text.
+  static const text = Color(0xFF1A1A1A);
+  static const textSecondary = Color(0xFF4B4B57);
+  static const textMuted = Color(0xFF8A8A99);
+  static const textFaint = Color(0xFFB9B9C6);
+
+  // Accent.
+  static const accent = Color(0xFF6A5BC2);
+  static const accentLight = Color(0xFF6A5BC2); // accent text and icons on light
+  static const accentDeep = Color(0xFF5546AE);
+  static const violet = Color(0xFF8A7BE0);
+  static const accentSoft = Color(0x1F6A5BC2); // tinted backgrounds
+  static const accentBorder = Color(0x666A5BC2);
+  static const onAccent = Colors.white;
+
+  // Highlight.
+  static const highlight = Color(0xFFF4F185);
+  static const onHighlight = Color(0xFF1A1A1A);
+
+  // Status.
+  static const success = Color(0xFF34C77B);
+  static const danger = Color(0xFFF0506E);
+  static const warning = Color(0xFFE0A019);
+
+  /// Primary buttons, your own message bubbles.
+  static const accentGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFDFE3E8), Color(0xFFB9C0CA)],
+    colors: [Color(0xFF7A6BD6), accentDeep],
   );
 
-  /// Unread badges and other small attention marks.
-  static const bronzeMetal = LinearGradient(
+  /// The header behind every screen.
+  static const headerGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [bronze300, bronze500],
-  );
-
-  /// The body of a glass panel.
-  static final glassFill = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      const Color(0xFFDDE2EA).withValues(alpha: 0.17),
-      const Color(0xFFB6BCC7).withValues(alpha: 0.05),
-    ],
-  );
-
-  /// The light catching the edge of a glass panel.
-  static final glassRim = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      Colors.white.withValues(alpha: 0.42),
-      Colors.white.withValues(alpha: 0.07),
-      Colors.white.withValues(alpha: 0.20),
-    ],
-    stops: const [0, 0.55, 1],
-  );
-
-  /// The same rim, warmed up to mark something as needing attention.
-  static final bronzeRim = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [
-      bronze300.withValues(alpha: 0.70),
-      bronze400.withValues(alpha: 0.12),
-      bronze400.withValues(alpha: 0.30),
-    ],
-    stops: const [0, 0.55, 1],
+    colors: [headerTop, headerBottom],
   );
 }

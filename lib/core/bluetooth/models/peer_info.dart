@@ -20,9 +20,9 @@ class PeerInfo {
   String get idPrefix => id.substring(0, 8);
 
   PeerInfo copyWith({String? displayName}) => PeerInfo(
-        id: id,
-        displayName: displayName ?? this.displayName,
-        publicKey: publicKey,
-        platform: platform,
-      );
+    id: id,
+    displayName: displayName ?? this.displayName,
+    publicKey: publicKey,
+    platform: platform,
+  );
 }

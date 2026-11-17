@@ -152,12 +152,12 @@ class _LoopingState extends State<Looping> with SingleTickerProviderStateMixin {
 
 /// A status dot with a ring radiating out of it.
 class PulseDot extends StatelessWidget {
-  const PulseDot({super.key, this.color = AppColors.bronze400, this.size = 8, this.active = true});
+  const PulseDot({super.key, this.color = AppColors.accent, this.size = 8, this.active = true});
 
   final Color color;
   final double size;
 
-  /// When false the dot sits still in a dimmed silver.
+  /// When false the dot sits still in a dimmed grey.
   final bool active;
 
   @override
@@ -168,7 +168,7 @@ class PulseDot extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: active ? color : AppColors.silver500,
+        color: active ? color : AppColors.textFaint,
       ),
     );
     return SizedBox(
@@ -201,36 +201,6 @@ class PulseDot extends StatelessWidget {
                 },
               ),
       ),
-    );
-  }
-}
-
-/// Text with a band of light passing across it, like a polished nameplate.
-class ShimmerText extends StatelessWidget {
-  const ShimmerText(this.text, {super.key, this.style});
-
-  final String text;
-  final TextStyle? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return Looping(
-      period: const Duration(seconds: 6),
-      restingValue: 0.8,
-      child: Text(text, style: style?.copyWith(color: Colors.white), maxLines: 1),
-      builder: (context, t, child) {
-        // The light crosses during the first third, then the text rests.
-        final x = -1.6 + 3.2 * (t * 3).clamp(0.0, 1.0);
-        return ShaderMask(
-          blendMode: BlendMode.srcIn,
-          shaderCallback: (bounds) => LinearGradient(
-            begin: Alignment(x - 0.7, -0.3),
-            end: Alignment(x + 0.7, 0.3),
-            colors: const [AppColors.silver300, Colors.white, AppColors.silver300],
-          ).createShader(bounds),
-          child: child,
-        );
-      },
     );
   }
 }

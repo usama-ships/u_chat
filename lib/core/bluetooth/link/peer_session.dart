@@ -129,12 +129,14 @@ class PeerSession {
   // ----------------------------------------------------------- receiving
 
   void _enqueue(Future<void> Function() step) {
-    _incomingTail = _incomingTail.then((_) {
-      if (state == SessionState.closed) return null;
-      return step();
-    }).catchError((Object e) {
-      close('internal error: $e', disconnect: true);
-    });
+    _incomingTail = _incomingTail
+        .then((_) {
+          if (state == SessionState.closed) return null;
+          return step();
+        })
+        .catchError((Object e) {
+          close('internal error: $e', disconnect: true);
+        });
   }
 
   void _onPacket(Uint8List packet) {

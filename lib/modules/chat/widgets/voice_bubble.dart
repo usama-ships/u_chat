@@ -26,8 +26,8 @@ class VoiceBubble extends GetView<ChatController> {
   @override
   Widget build(BuildContext context) {
     final outgoing = message.isOutgoing;
-    final ink = outgoing ? AppColors.graphite700 : AppColors.silver300;
-    final playedColor = outgoing ? AppColors.bronze700 : AppColors.bronze400;
+    final ink = outgoing ? AppColors.onAccent.withValues(alpha: 0.75) : AppColors.textSecondary;
+    final playedColor = outgoing ? AppColors.onAccent : AppColors.accentLight;
 
     return SizedBox(
       width: _width(context),
@@ -77,7 +77,9 @@ class VoiceBubble extends GetView<ChatController> {
                     onSeek: (fraction) => controller.seekVoice(message, meta, fraction),
                     child: SignalTrace(
                       bars: meta.waveform,
-                      color: outgoing ? AppColors.graphite600 : AppColors.silver400,
+                      color: outgoing
+                          ? AppColors.onAccent.withValues(alpha: 0.42)
+                          : AppColors.textMuted,
                       playedColor: playedColor,
                       played: played,
                       available: available,
@@ -110,7 +112,7 @@ class VoiceBubble extends GetView<ChatController> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                color: failed ? AppColors.clay : ink,
+                                color: failed ? AppColors.danger : ink,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -214,8 +216,8 @@ class _PlayButton extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: outgoing ? null : AppColors.silverMetal,
-                color: outgoing ? AppColors.graphite800 : null,
+                gradient: outgoing ? null : AppColors.accentGradient,
+                color: outgoing ? AppColors.onAccent : null,
               ),
               child: AnimatedSwitcher(
                 duration: Motion.fast,
@@ -224,7 +226,7 @@ class _PlayButton extends StatelessWidget {
                   icon,
                   key: ValueKey(icon),
                   size: 24,
-                  color: outgoing ? AppColors.silver100 : AppColors.graphite900,
+                  color: outgoing ? AppColors.accent : AppColors.onAccent,
                 ),
               ),
             ),
@@ -240,10 +242,9 @@ class _PlayButton extends StatelessWidget {
                     value: value,
                     strokeWidth: 2.4,
                     strokeCap: StrokeCap.round,
-                    color: outgoing ? AppColors.bronze700 : AppColors.bronze400,
-                    backgroundColor: (outgoing ? AppColors.graphite700 : Colors.white).withValues(
-                      alpha: 0.14,
-                    ),
+                    color: outgoing ? AppColors.onAccent : AppColors.accentLight,
+                    backgroundColor: (outgoing ? AppColors.onAccent : AppColors.textFaint)
+                        .withValues(alpha: 0.25),
                   ),
                 ),
               ),
@@ -297,7 +298,7 @@ class _SpeedChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: (outgoing ? AppColors.graphite800 : Colors.white).withValues(alpha: 0.14),
+          color: outgoing ? AppColors.onAccent.withValues(alpha: 0.2) : AppColors.surfaceHigh,
         ),
         child: AnimatedSwitcher(
           duration: Motion.fast,
@@ -306,7 +307,7 @@ class _SpeedChip extends StatelessWidget {
             label,
             key: ValueKey(label),
             style: TextStyle(
-              color: outgoing ? AppColors.graphite800 : AppColors.silver100,
+              color: outgoing ? AppColors.onAccent : AppColors.text,
               fontSize: 11,
               fontWeight: FontWeight.w700,
             ),

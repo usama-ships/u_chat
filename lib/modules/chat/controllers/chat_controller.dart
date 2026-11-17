@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import '../../../app/routes/app_routes.dart';
 import '../../../app/widgets/overlays.dart';
 import '../../../core/bluetooth/bluetooth_service.dart';
+import '../../../core/bluetooth/models/ble_availability.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/messaging/messaging_service.dart';
 import '../../../core/messaging/voice_transfer_service.dart';
@@ -72,7 +73,13 @@ class ChatController extends GetxController {
 
   // Reactive getters: read inside Obx.
   bool get isConnected => peerId != null && _bluetooth.connectedPeers.containsKey(peerId);
-  bool get isConnecting => peerId != null && _bluetooth.isConnectingTo(peerId!);
+
+  /// True from the moment the user taps Connect: first while the phone is
+  /// looked for, then while the connection is set up.
+  final isSearching = false.obs;
+
+  bool get isConnecting =>
+      peerId != null && (isSearching.value || _bluetooth.isConnectingTo(peerId!));
   int? get latencyMs => peerId == null ? null : _bluetooth.peerLatencyMs[peerId];
 
   @override
@@ -123,11 +130,22 @@ class ChatController extends GetxController {
   Future<void> connect() async {
     final peer = conversation.value?.peer;
     if (peer == null || isConnected || isConnecting) return;
-    final ok = await _bluetooth.connectToKnownPeer(peer.id);
+    final blocker = connectBlocker(_bluetooth.availability.value);
+    if (blocker != null) {
+      showToast('Could not connect', blocker);
+      return;
+    }
+    isSearching.value = true;
+    final bool ok;
+    try {
+      ok = await _bluetooth.connectToKnownPeer(peer.id);
+    } finally {
+      if (!isClosed) isSearching.value = false;
+    }
     if (!ok && !isClosed) {
       showToast(
         'Could not connect',
-        "${peer.displayName} wasn't found nearby. Make sure U Chat is open on their phone "
+        "${peer.displayName} wasn't found nearby. Make sure Blue Chat is open on their phone "
             'with Bluetooth on.',
       );
     }

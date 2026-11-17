@@ -26,16 +26,16 @@ abstract final class AppPages {
   ];
 
   static GetPage<dynamic> _page(String name, GetPageBuilder page, Bindings binding) => GetPage(
-        name: name,
-        page: page,
-        binding: binding,
-        customTransition: GlassPageTransition(),
-        transitionDuration: Motion.page,
-      );
+    name: name,
+    page: page,
+    binding: binding,
+    customTransition: AppPageTransition(),
+    transitionDuration: Motion.page,
+  );
 }
 
 /// The new screen rises and fades in while the old one recedes.
-class GlassPageTransition extends CustomTransition {
+class AppPageTransition extends CustomTransition {
   @override
   Widget buildTransition(
     BuildContext context,

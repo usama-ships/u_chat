@@ -12,9 +12,8 @@ part 'conversation_dao.g.dart';
 class ConversationDao extends DatabaseAccessor<AppDatabase> with _$ConversationDaoMixin {
   ConversationDao(super.attachedDatabase);
 
-  JoinedSelectStatement<HasResultSet, dynamic> _withPeer() => select(conversations).join([
-        innerJoin(peers, peers.id.equalsExp(conversations.peerId)),
-      ]);
+  JoinedSelectStatement<HasResultSet, dynamic> _withPeer() =>
+      select(conversations).join([innerJoin(peers, peers.id.equalsExp(conversations.peerId))]);
 
   ConversationWithPeer _map(TypedResult row) =>
       ConversationWithPeer(conversation: row.readTable(conversations), peer: row.readTable(peers));
@@ -49,11 +48,12 @@ class ConversationDao extends DatabaseAccessor<AppDatabase> with _$ConversationD
   /// Deletes a conversation and all its messages. The peer is kept (so
   /// verification and block state survive).
   Future<void> deleteWithMessages(String conversationId) => transaction(() async {
-        await (delete(messages)..where((m) => m.conversationId.equals(conversationId))).go();
-        await (delete(conversations)..where((c) => c.id.equals(conversationId))).go();
-      });
+    await (delete(messages)..where((m) => m.conversationId.equals(conversationId))).go();
+    await (delete(conversations)..where((c) => c.id.equals(conversationId))).go();
+  });
 
   Future<void> markRead(String conversationId) =>
-      (update(conversations)..where((c) => c.id.equals(conversationId)))
-          .write(const ConversationsCompanion(unreadCount: Value(0)));
+      (update(conversations)..where((c) => c.id.equals(conversationId))).write(
+        const ConversationsCompanion(unreadCount: Value(0)),
+      );
 }

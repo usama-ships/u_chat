@@ -1,4 +1,4 @@
-# U Chat — Device Test Checklist
+# Blue Chat — Device Test Checklist
 
 Automated tests (`flutter test`) cover the protocol, cryptography, database and
 delivery logic with simulated phones. This checklist covers what only real
@@ -14,13 +14,13 @@ the lines starting with `PeerSession … closed:`.
 | 1.2 | Deny permission | "Permission needed" screen with **Allow** |
 | 1.3 | Deny twice, then tap the button | Button says **Open app settings** and opens them |
 | 1.4 | Bluetooth off, open Nearby | "Bluetooth is off". Turning it on starts scanning automatically |
-| 1.5 | Settings → Bluetooth | Status "Ready", Visibility "Visible to nearby U Chat users…" |
+| 1.5 | Settings → Bluetooth | Status "Ready", Visibility "Visible to nearby Blue Chat users…" |
 
 ## 2. Discovery
 | # | Step | Expected |
 |---|---|---|
 | 2.1 | Open Nearby on both phones | Each lists the other within ~5 s, with name and signal |
-| 2.2 | Close U Chat on B | B disappears from A's list within ~12 s |
+| 2.2 | Close Blue Chat on B | B disappears from A's list within ~12 s |
 | 2.3 | Change B's name in Settings | A shows the new name (first 13 bytes) |
 | 2.4 | Leave Nearby open for 2+ minutes | Scanning stops; **Scan again** appears |
 

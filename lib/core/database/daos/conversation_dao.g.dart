@@ -13,8 +13,7 @@ mixin _$ConversationDaoMixin on DatabaseAccessor<AppDatabase> {
 class ConversationDaoManager {
   final _$ConversationDaoMixin _db;
   ConversationDaoManager(this._db);
-  $$PeersTableTableManager get peers =>
-      $$PeersTableTableManager(_db.attachedDatabase, _db.peers);
+  $$PeersTableTableManager get peers => $$PeersTableTableManager(_db.attachedDatabase, _db.peers);
   $$ConversationsTableTableManager get conversations =>
       $$ConversationsTableTableManager(_db.attachedDatabase, _db.conversations);
   $$MessagesTableTableManager get messages =>

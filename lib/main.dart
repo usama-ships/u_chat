@@ -25,15 +25,13 @@ class UChatApp extends StatelessWidget {
     return GetMaterialApp(
       title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      theme: AppTheme.light,
+      themeMode: ThemeMode.light,
       initialRoute: AppPages.initial,
       getPages: AppPages.pages,
       // Honour large system text, up to the point where layouts still work.
-      builder: (context, child) => MediaQuery.withClampedTextScaling(
-        maxScaleFactor: 1.5,
-        child: child!,
-      ),
+      builder: (context, child) =>
+          MediaQuery.withClampedTextScaling(maxScaleFactor: 1.5, child: child!),
     );
   }
 }

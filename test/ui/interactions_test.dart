@@ -103,7 +103,7 @@ void main() {
     await pumpScreen(tester, const HomeView());
     final context = tester.element(find.byType(HomeView));
 
-    final first = showGlassConfirm(
+    final first = showConfirm(
       context,
       title: 'Delete conversation?',
       message:
@@ -118,7 +118,7 @@ void main() {
     await pumpFor(tester, 0.5);
     expect(await first, isTrue);
 
-    final second = showGlassConfirm(
+    final second = showConfirm(
       context,
       title: 'Delete conversation?',
       message: 'Sure?',
@@ -170,20 +170,20 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       GetMaterialApp(
-        theme: AppTheme.dark,
+        theme: AppTheme.light,
         debugShowCheckedModeBanner: false,
         initialRoute: '/',
         getPages: [
           GetPage(
             name: '/',
             page: () => const HomeView(),
-            customTransition: GlassPageTransition(),
+            customTransition: AppPageTransition(),
             transitionDuration: Motion.page,
           ),
           GetPage(
             name: '/settings',
             page: () => const SettingsView(),
-            customTransition: GlassPageTransition(),
+            customTransition: AppPageTransition(),
             transitionDuration: Motion.page,
           ),
         ],

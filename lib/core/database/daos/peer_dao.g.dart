@@ -11,6 +11,5 @@ mixin _$PeerDaoMixin on DatabaseAccessor<AppDatabase> {
 class PeerDaoManager {
   final _$PeerDaoMixin _db;
   PeerDaoManager(this._db);
-  $$PeersTableTableManager get peers =>
-      $$PeersTableTableManager(_db.attachedDatabase, _db.peers);
+  $$PeersTableTableManager get peers => $$PeersTableTableManager(_db.attachedDatabase, _db.peers);
 }

@@ -24,7 +24,7 @@
     <!-- allowBackup=false: the identity private key lives in the Android Keystore and is not
          backed up. Restoring the database without it would leave chats bound to a lost identity. -->
     <application
-        android:label="U Chat"
+        android:label="Blue Chat"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"

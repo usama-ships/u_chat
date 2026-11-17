@@ -74,18 +74,16 @@ class CentralLink extends BleLink {
   GATTCharacteristic get tx => _tx;
 
   @override
-  Future<int> maxPacketSize() => _manager.getMaximumWriteLength(
-        peripheral,
-        type: GATTCharacteristicWriteType.withResponse,
-      );
+  Future<int> maxPacketSize() =>
+      _manager.getMaximumWriteLength(peripheral, type: GATTCharacteristicWriteType.withResponse);
 
   @override
   Future<void> sendPacket(Uint8List packet) => _manager.writeCharacteristic(
-        peripheral,
-        _rx,
-        value: packet,
-        type: GATTCharacteristicWriteType.withResponse,
-      );
+    peripheral,
+    _rx,
+    value: packet,
+    type: GATTCharacteristicWriteType.withResponse,
+  );
 
   @override
   Future<void> disconnect() async {

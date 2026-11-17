@@ -5,71 +5,59 @@ import 'app_colors.dart';
 abstract final class AppTheme {
   static const _fontFamily = 'Manrope';
 
-  static ThemeData get dark {
-    const scheme = ColorScheme.dark(
-      primary: AppColors.silver200,
-      onPrimary: AppColors.graphite900,
-      primaryContainer: AppColors.graphite700,
-      onPrimaryContainer: AppColors.silver100,
-      secondary: AppColors.bronze400,
-      onSecondary: AppColors.graphite950,
-      secondaryContainer: AppColors.graphite700,
-      onSecondaryContainer: AppColors.silver100,
-      surface: AppColors.graphite900,
-      onSurface: AppColors.silver100,
-      onSurfaceVariant: AppColors.silver300,
-      surfaceContainerHigh: AppColors.graphite800,
-      surfaceContainerHighest: AppColors.graphite700,
-      outline: AppColors.silver500,
-      outlineVariant: AppColors.graphite600,
-      error: AppColors.clay,
-      onError: AppColors.graphite950,
+  static ThemeData get light {
+    const scheme = ColorScheme.light(
+      primary: AppColors.accent,
+      onPrimary: AppColors.onAccent,
+      primaryContainer: AppColors.accentSoft,
+      onPrimaryContainer: AppColors.accentDeep,
+      secondary: AppColors.highlight,
+      onSecondary: AppColors.onHighlight,
+      surface: AppColors.surface,
+      onSurface: AppColors.text,
+      onSurfaceVariant: AppColors.textSecondary,
+      surfaceContainerLowest: AppColors.surface,
+      surfaceContainerLow: AppColors.bg,
+      surfaceContainer: AppColors.surface,
+      surfaceContainerHigh: AppColors.surfaceRaised,
+      surfaceContainerHighest: AppColors.surfaceHigh,
+      outline: AppColors.textFaint,
+      outlineVariant: AppColors.border,
+      error: AppColors.danger,
+      onError: AppColors.onAccent,
     );
 
     final base = ThemeData(
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       colorScheme: scheme,
       useMaterial3: true,
       fontFamily: _fontFamily,
     );
+    final text = base.textTheme;
 
     return base.copyWith(
-      scaffoldBackgroundColor: AppColors.graphite950,
-      splashFactory: NoSplash.splashFactory,
+      scaffoldBackgroundColor: AppColors.bg,
+      splashFactory: InkSparkle.splashFactory,
       highlightColor: Colors.transparent,
-      textTheme: base.textTheme.copyWith(
-        headlineMedium: base.textTheme.headlineMedium?.copyWith(
+      textTheme: text.copyWith(
+        headlineMedium: text.headlineMedium?.copyWith(
           fontWeight: FontWeight.w800,
           letterSpacing: -0.6,
         ),
-        headlineSmall: base.textTheme.headlineSmall?.copyWith(
+        headlineSmall: text.headlineSmall?.copyWith(
           fontWeight: FontWeight.w800,
-          letterSpacing: -0.4,
+          letterSpacing: -0.5,
         ),
-        titleLarge: base.textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.2,
-        ),
-        titleMedium: base.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.1,
-        ),
-        bodyLarge: base.textTheme.bodyLarge?.copyWith(height: 1.4),
-        bodyMedium: base.textTheme.bodyMedium?.copyWith(height: 1.4),
-        bodySmall: base.textTheme.bodySmall?.copyWith(
-          height: 1.4,
-          color: AppColors.silver300,
-        ),
-        labelLarge: base.textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.1,
-        ),
-        labelMedium: base.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
-        labelSmall: base.textTheme.labelSmall?.copyWith(
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.3,
-        ),
+        titleLarge: text.titleLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.3),
+        titleMedium: text.titleMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.1),
+        bodyLarge: text.bodyLarge?.copyWith(height: 1.4),
+        bodyMedium: text.bodyMedium?.copyWith(height: 1.4, color: AppColors.textSecondary),
+        bodySmall: text.bodySmall?.copyWith(height: 1.4, color: AppColors.textMuted),
+        labelLarge: text.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+        labelMedium: text.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+        labelSmall: text.labelSmall?.copyWith(fontWeight: FontWeight.w600, letterSpacing: 0.3),
       ),
+      iconTheme: const IconThemeData(color: AppColors.text),
       inputDecorationTheme: const InputDecorationTheme(
         filled: false,
         border: InputBorder.none,
@@ -79,52 +67,41 @@ abstract final class AppTheme {
         focusedErrorBorder: InputBorder.none,
         isDense: true,
         contentPadding: EdgeInsets.symmetric(vertical: 10),
-        hintStyle: TextStyle(color: AppColors.silver400),
+        hintStyle: TextStyle(color: AppColors.textMuted),
       ),
-      textSelectionTheme: TextSelectionThemeData(
-        cursorColor: AppColors.bronze400,
-        selectionColor: AppColors.bronze400.withValues(alpha: 0.35),
-        selectionHandleColor: AppColors.bronze400,
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: AppColors.accent,
+        selectionColor: AppColors.accentSoft,
+        selectionHandleColor: AppColors.accent,
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? AppColors.graphite950
-              : AppColors.silver400,
-        ),
+        thumbColor: WidgetStateProperty.all(Colors.white),
         trackColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? AppColors.bronze400
-              : Colors.white.withValues(alpha: 0.08),
+          (states) =>
+              states.contains(WidgetState.selected) ? AppColors.accent : const Color(0xFFDCDBE6),
         ),
-        trackOutlineColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? Colors.transparent
-              : Colors.white.withValues(alpha: 0.18),
-        ),
+        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(color: AppColors.silver300),
-      dividerTheme: DividerThemeData(
-        color: Colors.white.withValues(alpha: 0.07),
-        thickness: 1,
-        space: 1,
-      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(color: AppColors.accent),
+      dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1, space: 1),
       popupMenuTheme: PopupMenuThemeData(
-        color: AppColors.graphite800,
+        color: AppColors.surfaceRaised,
         surfaceTintColor: Colors.transparent,
-        elevation: 12,
-        shadowColor: Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+        elevation: 10,
+        shadowColor: const Color(0x406A5BC2),
+        textStyle: const TextStyle(
+          color: AppColors.text,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w600,
         ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       tooltipTheme: TooltipThemeData(
-        decoration: BoxDecoration(
-          color: AppColors.graphite700,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        textStyle: const TextStyle(color: AppColors.silver100, fontFamily: _fontFamily),
+        decoration: BoxDecoration(color: AppColors.text, borderRadius: BorderRadius.circular(8)),
+        textStyle: const TextStyle(color: Colors.white, fontFamily: _fontFamily),
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {TargetPlatform.android: FadeForwardsPageTransitionsBuilder()},
       ),
     );
   }

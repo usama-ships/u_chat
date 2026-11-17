@@ -7,9 +7,20 @@ import '../theme/app_motion.dart';
 
 /// One device on the [Radar].
 class RadarBlip {
-  const RadarBlip({required this.id, required this.strength});
+  const RadarBlip({
+    required this.id,
+    required this.strength,
+    this.label = '',
+    this.colors = const [],
+  });
 
   final String id;
+
+  /// Initial drawn on the blip. Empty for a plain dot.
+  final String label;
+
+  /// The person's avatar gradient, so the blip matches their card.
+  final List<Color> colors;
 
   /// 0 (far, at the edge) to 1 (close, near the centre).
   final double strength;
@@ -110,6 +121,23 @@ class _RadarPainter extends CustomPainter {
   final List<RadarBlip> blips;
   final Map<String, DateTime> firstSeen;
 
+  late final Map<String, TextPainter> _labels = {
+    for (final blip in blips)
+      if (blip.label.isNotEmpty)
+        blip.id: TextPainter(
+          text: TextSpan(
+            text: blip.label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Manrope',
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout(),
+  };
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
@@ -117,7 +145,17 @@ class _RadarPainter extends CustomPainter {
     final on = power.value;
     final angle = sweep.value * 2 * math.pi;
 
-    // Glass dish.
+    // Halo.
+    canvas.drawCircle(
+      center,
+      radius * 1.25,
+      Paint()
+        ..shader = RadialGradient(
+          colors: [AppColors.accent.withValues(alpha: 0.22), AppColors.accent.withValues(alpha: 0)],
+        ).createShader(Rect.fromCircle(center: center, radius: radius * 1.25)),
+    );
+
+    // Dish.
     final dish = Rect.fromCircle(center: center, radius: radius);
     canvas.drawCircle(
       center,
@@ -125,8 +163,8 @@ class _RadarPainter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           colors: [
-            Colors.white.withValues(alpha: 0.075),
-            Colors.white.withValues(alpha: 0.015),
+            AppColors.accent.withValues(alpha: 0.10),
+            AppColors.accent.withValues(alpha: 0.02),
           ],
         ).createShader(dish),
     );
@@ -135,7 +173,7 @@ class _RadarPainter extends CustomPainter {
     final line = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
-      ..color = AppColors.silver300.withValues(alpha: 0.13);
+      ..color = AppColors.textFaint.withValues(alpha: 0.35);
     for (final fraction in const [0.34, 0.67]) {
       canvas.drawCircle(center, radius * fraction, line);
     }
@@ -147,7 +185,7 @@ class _RadarPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2
-        ..shader = AppColors.glassRim.createShader(dish),
+        ..color = AppColors.borderStrong,
     );
 
     if (on > 0) {
@@ -160,7 +198,7 @@ class _RadarPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.2
-            ..color = AppColors.silver200.withValues(alpha: 0.22 * (1 - p) * on),
+            ..color = AppColors.accentLight.withValues(alpha: 0.28 * (1 - p) * on),
         );
       }
 
@@ -178,9 +216,9 @@ class _RadarPainter extends CustomPainter {
             startAngle: 0,
             endAngle: 2 * math.pi,
             colors: [
-              AppColors.bronze400.withValues(alpha: 0),
-              AppColors.bronze400.withValues(alpha: 0),
-              AppColors.bronze400.withValues(alpha: 0.34 * on),
+              AppColors.accent.withValues(alpha: 0),
+              AppColors.accent.withValues(alpha: 0),
+              AppColors.accent.withValues(alpha: 0.34 * on),
             ],
             stops: const [0, 0.68, 1],
           ).createShader(dish),
@@ -190,7 +228,7 @@ class _RadarPainter extends CustomPainter {
         center + Offset(radius, 0),
         Paint()
           ..strokeWidth = 1.4
-          ..color = AppColors.bronze300.withValues(alpha: 0.75 * on),
+          ..color = AppColors.accentLight.withValues(alpha: 0.75 * on),
       );
       canvas.restore();
     }
@@ -209,17 +247,56 @@ class _RadarPainter extends CustomPainter {
       final sinceBeam = ((angle - theta) % (2 * math.pi)) / (2 * math.pi);
       final flare = on * math.pow(1 - sinceBeam, 3).toDouble();
 
+      final colors = blip.colors.isEmpty ? const [AppColors.accent, AppColors.violet] : blip.colors;
       canvas.drawCircle(
         position,
-        (9 + 11 * flare) * appear,
-        Paint()..color = AppColors.bronze400.withValues(alpha: 0.14 + 0.26 * flare),
+        (16 + 10 * flare) * appear,
+        Paint()..color = colors.last.withValues(alpha: 0.16 + 0.30 * flare),
       );
-      canvas.drawCircle(position, 4.5 * appear, Paint()..color = AppColors.bronze300);
+      final dot = 13.0 * appear;
+      if (dot <= 0) continue;
+      canvas.drawCircle(
+        position,
+        dot,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: colors,
+          ).createShader(Rect.fromCircle(center: position, radius: dot)),
+      );
+      canvas.drawCircle(
+        position,
+        dot,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..color = Colors.white.withValues(alpha: 0.85),
+      );
+      final label = _labels[blip.id];
+      if (label != null && appear > 0.6) {
+        label.paint(canvas, position - Offset(label.width / 2, label.height / 2));
+      }
     }
 
     // You, in the middle.
-    canvas.drawCircle(center, 9, Paint()..color = AppColors.silver200.withValues(alpha: 0.16));
-    canvas.drawCircle(center, 4.5, Paint()..color = AppColors.silver100);
+    canvas.drawCircle(center, 14, Paint()..color = AppColors.accent.withValues(alpha: 0.25));
+    canvas.drawCircle(
+      center,
+      7,
+      Paint()
+        ..shader = AppColors.accentGradient.createShader(
+          Rect.fromCircle(center: center, radius: 7),
+        ),
+    );
+    canvas.drawCircle(
+      center,
+      7,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = Colors.white,
+    );
   }
 
   int _hash(String value) {

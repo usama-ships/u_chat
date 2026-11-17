@@ -71,11 +71,13 @@ abstract final class Handshake {
     final aFirst = idA.compareTo(idB) < 0;
     final first = aFirst ? helloA : helloB;
     final second = aFirst ? helloB : helloA;
-    return Uint8List.fromList(hash.sha256.convert([
-      ...utf8.encode(label),
-      ...hash.sha256.convert(first).bytes,
-      ...hash.sha256.convert(second).bytes,
-    ]).bytes);
+    return Uint8List.fromList(
+      hash.sha256.convert([
+        ...utf8.encode(label),
+        ...hash.sha256.convert(first).bytes,
+        ...hash.sha256.convert(second).bytes,
+      ]).bytes,
+    );
   }
 
   static Uint8List authMessage(String signerId, List<int> transcript) =>
@@ -141,8 +143,8 @@ class SealedFrameException implements Exception {
 /// rejected — the link delivers in order, so legitimate frames always do.
 class SessionCipher {
   SessionCipher({required List<int> sendKey, required List<int> receiveKey})
-      : _sendKey = SecretKey(sendKey),
-        _receiveKey = SecretKey(receiveKey);
+    : _sendKey = SecretKey(sendKey),
+      _receiveKey = SecretKey(receiveKey);
 
   static const overhead = 8 + 16;
 
@@ -155,8 +157,7 @@ class SessionCipher {
   static Uint8List _counterBytes(int counter) =>
       (ByteData(8)..setInt64(0, counter)).buffer.asUint8List();
 
-  static Uint8List _nonce(Uint8List counterBytes) =>
-      Uint8List(12)..setRange(4, 12, counterBytes);
+  static Uint8List _nonce(Uint8List counterBytes) => Uint8List(12)..setRange(4, 12, counterBytes);
 
   /// Must be called in send order (the session serializes sends).
   Future<Uint8List> seal(Uint8List plaintext) async {

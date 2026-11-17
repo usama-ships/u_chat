@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_motion.dart';
-import '../../../app/widgets/glass.dart';
 import '../../../app/widgets/motion.dart';
 import '../../../app/widgets/peer_avatar.dart';
-import '../../../app/widgets/pressable.dart';
+import '../../../app/widgets/surfaces.dart';
 import '../../../core/utils/time_format.dart';
 import '../../../data/models/conversation_with_peer.dart';
 
+/// One conversation in the home list: a full-width row that tints lavender
+/// when pressed, like the chat lists people already know.
 class ConversationTile extends StatelessWidget {
   const ConversationTile({
     super.key,
@@ -16,12 +17,14 @@ class ConversationTile extends StatelessWidget {
     required this.onTap,
     this.onLongPress,
     this.isConnected = false,
+    this.horizontalPadding = 16,
   });
 
   final ConversationWithPeer item;
   final bool isConnected;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final double horizontalPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -32,14 +35,11 @@ class ConversationTile extends StatelessWidget {
     final name = item.peer.displayName;
     final preview = conversation.lastMessagePreview ?? 'No messages yet';
 
-    return Pressable(
+    return TapHighlight(
       onTap: onTap,
       onLongPress: onLongPress,
-      pressedScale: 0.98,
-      child: GlassPanel(
-        radius: 22,
-        rim: unread > 0 ? AppColors.bronzeRim : null,
-        padding: const EdgeInsets.fromLTRB(10, 10, 14, 10),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 11),
         child: Row(
           children: [
             PeerAvatar(
@@ -49,7 +49,7 @@ class ConversationTile extends StatelessWidget {
               online: isConnected,
               heroTag: 'avatar-${item.peer.id}',
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,24 +64,24 @@ class ConversationTile extends StatelessWidget {
                                 name,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.titleMedium,
+                                style: theme.textTheme.titleMedium?.copyWith(fontSize: 16),
                               ),
                             ),
                             if (item.peer.verified) ...[
-                              const SizedBox(width: 5),
+                              const SizedBox(width: 4),
                               const Icon(
                                 Icons.verified_rounded,
                                 size: 16,
-                                color: AppColors.bronze400,
+                                color: AppColors.accentLight,
                                 semanticLabel: 'Verified',
                               ),
                             ],
                             if (item.peer.blocked) ...[
-                              const SizedBox(width: 5),
+                              const SizedBox(width: 4),
                               const Icon(
                                 Icons.block_rounded,
-                                size: 16,
-                                color: AppColors.clay,
+                                size: 15,
+                                color: AppColors.danger,
                                 semanticLabel: 'Blocked',
                               ),
                             ],
@@ -93,14 +93,15 @@ class ConversationTile extends StatelessWidget {
                         AnimatedDefaultTextStyle(
                           duration: Motion.medium,
                           style: theme.textTheme.labelSmall!.copyWith(
-                            color: unread > 0 ? AppColors.bronze300 : AppColors.silver400,
+                            color: unread > 0 ? AppColors.accent : AppColors.textMuted,
+                            fontWeight: unread > 0 ? FontWeight.w700 : FontWeight.w600,
                           ),
                           child: Text(formatConversationTime(lastAt)),
                         ),
                       ],
                     ],
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Expanded(
@@ -114,8 +115,9 @@ class ConversationTile extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: unread > 0 ? AppColors.silver100 : AppColors.silver300,
-                              fontWeight: unread > 0 ? FontWeight.w600 : FontWeight.w400,
+                              color: unread > 0 ? AppColors.textSecondary : AppColors.textMuted,
+                              fontWeight: unread > 0 ? FontWeight.w600 : FontWeight.w500,
+                              fontSize: 13.5,
                             ),
                           ),
                         ),
@@ -154,16 +156,16 @@ class _UnreadBadge extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 22),
       height: 22,
       alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 7),
       decoration: BoxDecoration(
-        gradient: AppColors.bronzeMetal,
+        color: AppColors.danger,
         borderRadius: BorderRadius.circular(11),
-        boxShadow: [BoxShadow(color: AppColors.bronze400.withValues(alpha: 0.35), blurRadius: 10)],
+        boxShadow: const [BoxShadow(color: Color(0x40F0506E), blurRadius: 8, offset: Offset(0, 3))],
       ),
       child: Text(
         count > 99 ? '99+' : '$count',
         style: const TextStyle(
-          color: AppColors.graphite950,
+          color: AppColors.onAccent,
           fontSize: 11.5,
           fontWeight: FontWeight.w800,
         ),

@@ -3,12 +3,20 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_motion.dart';
 import '../../../app/widgets/buttons.dart';
-import '../../../app/widgets/glass.dart';
 import '../../../app/widgets/motion.dart';
 import '../../../app/widgets/peer_avatar.dart';
 import '../../../app/widgets/pressable.dart';
+import '../../../app/widgets/surfaces.dart';
 import '../../../core/bluetooth/models/discovered_device.dart';
 import '../controllers/nearby_controller.dart';
+
+/// How far away a phone seems, in words, from its signal bars.
+String distanceLabel(int bars) => switch (bars) {
+  3 => 'Very close',
+  2 => 'Nearby',
+  1 => 'In range',
+  _ => 'Far away',
+};
 
 /// One discovered phone with its connect / chat action.
 class DeviceTile extends StatelessWidget {
@@ -29,106 +37,119 @@ class DeviceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final name = device.displayName;
+    final connected = linkState == DeviceLinkState.connected;
     final status = switch (linkState) {
       DeviceLinkState.connected => 'Connected',
       DeviceLinkState.connecting => 'Connecting…',
-      DeviceLinkState.available => 'ID ${device.deviceIdPrefix}…',
+      DeviceLinkState.available => distanceLabel(device.signalBars),
     };
     return Pressable(
       onTap: linkState == DeviceLinkState.connecting ? null : onAction,
       pressedScale: 0.98,
-      child: GlassPanel(
-        radius: 22,
-        rim: linkState == DeviceLinkState.connected ? AppColors.bronzeRim : null,
-        padding: const EdgeInsets.fromLTRB(10, 10, 12, 10),
+      child: Panel(
+        radius: 20,
+        borderColor: connected ? AppColors.accentBorder : AppColors.glassBorder,
+        padding: const EdgeInsets.all(12),
         child: Row(
           children: [
-            PeerAvatar(
-              seed: device.deviceIdPrefix,
-              name: name,
-              size: 46,
-              online: linkState == DeviceLinkState.connected,
-            ),
-            const SizedBox(width: 10),
+            PeerAvatar(seed: device.deviceIdPrefix, name: name, size: 48, online: connected),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium,
-                        ),
-                      ),
-                      if (isKnown) ...[
-                        const SizedBox(width: 6),
-                        const Icon(
-                          Icons.history_rounded,
-                          size: 15,
-                          color: AppColors.bronze400,
-                          semanticLabel: 'Known contact',
-                        ),
-                      ],
-                    ],
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium?.copyWith(fontSize: 16),
                   ),
-                  const SizedBox(height: 3),
-                  Row(
+                  const SizedBox(height: 5),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      _SignalBars(bars: device.signalBars),
-                      const SizedBox(width: 7),
-                      Flexible(
-                        child: AnimatedSwitcher(
-                          duration: Motion.medium,
-                          layoutBuilder: startAlignedLayout,
-                          transitionBuilder: fadeLiftTransition,
-                          child: Text(
-                            status,
-                            key: ValueKey(status),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: linkState == DeviceLinkState.connected
-                                  ? AppColors.bronze300
-                                  : AppColors.silver400,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _SignalBars(bars: device.signalBars),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: AnimatedSwitcher(
+                              duration: Motion.medium,
+                              transitionBuilder: fadeLiftTransition,
+                              child: Text(
+                                status,
+                                key: ValueKey(status),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: connected ? AppColors.success : AppColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
+                      if (isKnown) const _Tag(label: 'In your chats'),
                     ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             AnimatedSwitcher(
               duration: Motion.medium,
               transitionBuilder: popTransition,
               child: switch (linkState) {
                 DeviceLinkState.connecting => const Padding(
-                    key: ValueKey('busy'),
-                    padding: EdgeInsets.all(9),
-                    child: BusySpinner(),
-                  ),
-                DeviceLinkState.connected => GhostButton(
-                    key: const ValueKey('chat'),
-                    label: 'Chat',
-                    dense: true,
-                    onPressed: onAction,
-                  ),
-                DeviceLinkState.available => ChromeButton(
-                    key: const ValueKey('connect'),
-                    label: 'Connect',
-                    dense: true,
-                    glint: false,
-                    onPressed: onAction,
-                  ),
+                  key: ValueKey('busy'),
+                  padding: EdgeInsets.all(9),
+                  child: BusySpinner(),
+                ),
+                DeviceLinkState.connected => SecondaryButton(
+                  key: const ValueKey('chat'),
+                  label: 'Chat',
+                  icon: Icons.chat_bubble_outline_rounded,
+                  dense: true,
+                  onPressed: onAction,
+                ),
+                DeviceLinkState.available => PrimaryButton(
+                  key: const ValueKey('connect'),
+                  label: 'Connect',
+                  dense: true,
+                  onPressed: onAction,
+                ),
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.accentSoft,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.accentLight,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -143,14 +164,7 @@ class _SignalBars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = switch (bars) {
-      3 => 'Strong signal',
-      2 => 'Good signal',
-      1 => 'Weak signal',
-      _ => 'Very weak signal',
-    };
-    return Semantics(
-      label: label,
+    return ExcludeSemantics(
       child: SizedBox(
         height: 12,
         child: Row(
@@ -166,7 +180,7 @@ class _SignalBars extends StatelessWidget {
                 height: 3.0 + i * 3,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(1),
-                  color: i <= bars ? AppColors.bronze400 : Colors.white.withValues(alpha: 0.14),
+                  color: i <= bars ? AppColors.accentLight : AppColors.glassBorder,
                 ),
               ),
           ],

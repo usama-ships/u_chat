@@ -120,16 +120,20 @@ class BluetoothService extends GetxService with WidgetsBindingObserver implement
     _subscriptions
       ..add(_central.stateChanged.listen((_) => _onStateChanged()))
       ..add(_peripheral.stateChanged.listen((_) => _onStateChanged()))
-      ..add(_scanner.devices.listen((devices) {
-        discovered.assignAll(devices);
-        _checkTargets(devices);
-      }))
-      ..add(_settings.watchDisplayName().listen((name) {
-        if (name == _displayName) return;
-        _displayName = name;
-        _syncAdvertising();
-        _broadcastProfile(name);
-      }));
+      ..add(
+        _scanner.devices.listen((devices) {
+          discovered.assignAll(devices);
+          _checkTargets(devices);
+        }),
+      )
+      ..add(
+        _settings.watchDisplayName().listen((name) {
+          if (name == _displayName) return;
+          _displayName = name;
+          _syncAdvertising();
+          _broadcastProfile(name);
+        }),
+      );
 
     WidgetsBinding.instance.addObserver(this);
     _onStateChanged();
@@ -147,9 +151,10 @@ class BluetoothService extends GetxService with WidgetsBindingObserver implement
       BluetoothLowEnergyState.unsupported => BleAvailability.unsupported,
       BluetoothLowEnergyState.unauthorized => BleAvailability.unauthorized,
       BluetoothLowEnergyState.poweredOff => BleAvailability.poweredOff,
-      BluetoothLowEnergyState.poweredOn => peripheral == BluetoothLowEnergyState.unauthorized
-          ? BleAvailability.unauthorized
-          : BleAvailability.ready,
+      BluetoothLowEnergyState.poweredOn =>
+        peripheral == BluetoothLowEnergyState.unauthorized
+            ? BleAvailability.unauthorized
+            : BleAvailability.ready,
     };
     advertisingSupported.value = peripheral != BluetoothLowEnergyState.unsupported;
     if (availability.value == BleAvailability.ready) permissionDenied.value = false;
@@ -200,7 +205,8 @@ class BluetoothService extends GetxService with WidgetsBindingObserver implement
     try {
       do {
         _syncAdvertisingAgain = false;
-        final shouldAdvertise = _foreground &&
+        final shouldAdvertise =
+            _foreground &&
             availability.value == BleAvailability.ready &&
             _peripheral.state == BluetoothLowEnergyState.poweredOn;
         try {
@@ -243,17 +249,20 @@ class BluetoothService extends GetxService with WidgetsBindingObserver implement
   }
 
   Future<void> _syncScanning() async {
-    final shouldScan = (_scanWanted || _targets.isNotEmpty) &&
+    final shouldScan =
+        (_scanWanted || _targets.isNotEmpty) &&
         _foreground &&
         availability.value == BleAvailability.ready;
     try {
       if (shouldScan && !_scanner.isScanning) {
-        await _scanner.start(onTimeout: () {
-          _scanWanted = false;
-          isScanning.value = false;
-          // Restart if reconnect targets still need it.
-          _syncScanning();
-        });
+        await _scanner.start(
+          onTimeout: () {
+            _scanWanted = false;
+            isScanning.value = false;
+            // Restart if reconnect targets still need it.
+            _syncScanning();
+          },
+        );
       } else if (!shouldScan && _scanner.isScanning) {
         await _scanner.stop();
       }
@@ -509,11 +518,15 @@ class BluetoothService extends GetxService with WidgetsBindingObserver implement
       if (device == null) continue;
       target.attempts++;
       // Back off 2, 4, 8, 16, 30, 30… seconds between failed attempts.
-      target.nextAttempt =
-          now.add(Duration(seconds: math.min(30, 1 << math.min(target.attempts, 5))));
-      connect(device).then((_) {}, onError: (Object e) {
-        debugPrint('Reconnect to ${target.peerId} failed: $e');
-      });
+      target.nextAttempt = now.add(
+        Duration(seconds: math.min(30, 1 << math.min(target.attempts, 5))),
+      );
+      connect(device).then(
+        (_) {},
+        onError: (Object e) {
+          debugPrint('Reconnect to ${target.peerId} failed: $e');
+        },
+      );
     }
   }
 

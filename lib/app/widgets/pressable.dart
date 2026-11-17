@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// Tap target that sinks slightly under the finger and gives a haptic tick.
-/// Used instead of ink ripples, which don't suit glass surfaces.
 class Pressable extends StatefulWidget {
   const Pressable({
     super.key,
@@ -11,6 +10,7 @@ class Pressable extends StatefulWidget {
     this.onLongPress,
     this.pressedScale = 0.97,
     this.semanticLabel,
+    this.onHighlight,
   });
 
   final Widget child;
@@ -18,6 +18,9 @@ class Pressable extends StatefulWidget {
   final VoidCallback? onLongPress;
   final double pressedScale;
   final String? semanticLabel;
+
+  /// Told when the finger goes down and comes back up, for a press highlight.
+  final ValueChanged<bool>? onHighlight;
 
   @override
   State<Pressable> createState() => _PressableState();
@@ -27,12 +30,22 @@ class _PressableState extends State<Pressable> {
   bool _pressed = false;
 
   void _setPressed(bool value) {
-    if (_pressed != value) setState(() => _pressed = value);
+    if (_pressed == value) return;
+    setState(() => _pressed = value);
+    widget.onHighlight?.call(value);
   }
 
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onTap != null || widget.onLongPress != null;
+    final child = widget.pressedScale == 1
+        ? widget.child
+        : AnimatedScale(
+            scale: _pressed ? widget.pressedScale : 1,
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeOut,
+            child: widget.child,
+          );
     return Semantics(
       button: widget.onTap != null,
       enabled: enabled,
@@ -55,12 +68,7 @@ class _PressableState extends State<Pressable> {
                 HapticFeedback.mediumImpact();
                 widget.onLongPress!();
               },
-        child: AnimatedScale(
-          scale: _pressed ? widget.pressedScale : 1,
-          duration: const Duration(milliseconds: 120),
-          curve: Curves.easeOut,
-          child: widget.child,
-        ),
+        child: child,
       ),
     );
   }

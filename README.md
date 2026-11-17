@@ -1,11 +1,11 @@
-# U Chat
+# Blue Chat
 
 Offline, peer-to-peer, end-to-end encrypted chat over Bluetooth Low Energy.
 No internet, servers, accounts, or cloud services. Android only for now.
 
 ## Features
 
-- Discover nearby U Chat users and connect with one tap
+- Discover nearby Blue Chat users and connect with one tap
 - Text chat with delivery status: Pending → Sending → Sent → Delivered (or Failed, tap to retry)
 - Voice messages: hold to record, slide to cancel or lock, up to 2 minutes, with playback speed and seeking
 - Reliable delivery: ACK after the receiver stores the message, retries, duplicate protection, in-order delivery
@@ -40,8 +40,8 @@ FLUTTER_ROOT=/path/to/flutter UI_SHOTS_DIR=some/dir flutter test test/ui
 ```
 lib/
   app/            routes, theme, startup dependency wiring (AppDependencies)
-    theme/        the three tones (graphite, silver, bronze) and shared motion timing
-    widgets/      glass panels, buttons, radar, backdrop, overlays, responsive rules
+    theme/        Midnight + Indigo colours and shared motion timing
+    widgets/      surfaces, buttons, avatars, radar, background, overlays, responsive rules
   core/
     bluetooth/    radio layer
       bluetooth_service.dart   owns availability, advertising, scanning, sessions, reconnection

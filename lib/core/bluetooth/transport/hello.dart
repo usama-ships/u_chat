@@ -15,7 +15,7 @@ class HelloData {
 
 class IncompatibleVersionException extends FormatException {
   const IncompatibleVersionException()
-      : super('The other phone runs an incompatible version of U Chat. Update both phones.');
+    : super('The other phone runs an incompatible version of Blue Chat. Update both phones.');
 }
 
 /// HELLO frame body.
@@ -38,15 +38,19 @@ abstract final class HelloCodec {
     required List<int> nonce,
     String platform = 'android',
   }) {
-    return Uint8List.fromList(utf8.encode(jsonEncode({
-      'v': protocolVersion,
-      'id': deviceId,
-      'name': displayName,
-      'pk': base64Encode(publicKey),
-      'eph': base64Encode(ephemeralPublicKey),
-      'nonce': base64Encode(nonce),
-      'platform': platform,
-    })));
+    return Uint8List.fromList(
+      utf8.encode(
+        jsonEncode({
+          'v': protocolVersion,
+          'id': deviceId,
+          'name': displayName,
+          'pk': base64Encode(publicKey),
+          'eph': base64Encode(ephemeralPublicKey),
+          'nonce': base64Encode(nonce),
+          'platform': platform,
+        }),
+      ),
+    );
   }
 
   /// Validates and decodes a HELLO body. Throws [FormatException]
