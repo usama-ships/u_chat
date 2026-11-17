@@ -27,13 +27,14 @@ the lines starting with `PeerSession … closed:`.
 ## 3. Connecting and security
 | # | Step | Expected |
 |---|---|---|
-| 3.1 | A: tap **Connect** on B | Chat opens; header "Connected · encrypted · NN ms"; full name shown |
+| 3.1 | A: tap **Connect** on B | Chat opens; header "Connected · NN ms" with a green dot; full name shown |
 | 3.2 | Both tap Connect at the same moment | Exactly one connection on each side |
 | 3.3 | Open the contact (tap the header) on both phones | **Same safety number** on both |
 | 3.4 | Mark verified | ✓ badge in chat header, Home and contact screen |
-| 3.5 | Disconnect via ⋮ | Both show "Not connected"; no auto-reconnect |
+| 3.5 | Disconnect via the ⋯ menu | Both show "Not connected"; no auto-reconnect |
 | 3.6 | B: block A; A tries to connect | A drops to "Not connected" within a second and doesn't auto-reconnect; nothing A sends reaches B |
 | 3.7 | B: unblock; Settings → turn off **Accept new devices**; a third phone C (never chatted) connects | C is refused; A can still connect |
+| 3.8 | Still with **Accept new devices** off, B opens Nearby and taps **Connect** on C | Connects: the setting only refuses phones that connect to you |
 
 ## 4. Messaging
 | # | Step | Expected |
