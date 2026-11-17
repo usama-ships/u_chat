@@ -1,12 +1,13 @@
-# U Chat
+# Blue Chat
 
 Offline, peer-to-peer, end-to-end encrypted chat over Bluetooth Low Energy.
 No internet, servers, accounts, or cloud services. Android only for now.
 
 ## Features
 
-- Discover nearby U Chat users and connect with one tap
+- Discover nearby Blue Chat users and connect with one tap
 - Text chat with delivery status: Pending → Sending → Sent → Delivered (or Failed, tap to retry)
+- Voice messages: hold to record, slide to cancel or lock, up to 2 minutes, with playback speed and seeking
 - Reliable delivery: ACK after the receiver stores the message, retries, duplicate protection, in-order delivery
 - Automatic reconnection after unexpected drops; queued messages are sent when a contact reconnects
 - End-to-end encryption with a signed handshake, plus safety numbers to verify contacts in person
@@ -39,8 +40,8 @@ FLUTTER_ROOT=/path/to/flutter UI_SHOTS_DIR=some/dir flutter test test/ui
 ```
 lib/
   app/            routes, theme, startup dependency wiring (AppDependencies)
-    theme/        the three tones (graphite, silver, bronze) and shared motion timing
-    widgets/      glass panels, buttons, radar, backdrop, overlays, responsive rules
+    theme/        Midnight + Indigo colours and shared motion timing
+    widgets/      surfaces, buttons, avatars, radar, background, overlays, responsive rules
   core/
     bluetooth/    radio layer
       bluetooth_service.dart   owns availability, advertising, scanning, sessions, reconnection
@@ -51,6 +52,7 @@ lib/
       link/                    BleLink (one GATT connection), PeerSession (protocol state)
       transport/               packet fragmentation, frame format, HELLO/PROFILE codecs
     messaging/    MessagingService (queue, ACKs, retries), message protocol, PeerTransport interface
+    voice/        recorder, player, audio file store, voice metadata
     security/     identity key, handshake + session cipher, safety numbers, peer policy
     database/     Drift tables and DAOs
   data/           models and repositories
@@ -70,6 +72,7 @@ under `core/bluetooth/`.
 | Packet | 7-byte header (version/flags, transferId, index, total) + chunk; sized to the negotiated MTU |
 | Frame | `[type][body]`: `hello`, `auth`, `sealed` in the clear; everything else only inside `sealed` |
 | Message | JSON `{v,id,senderId,receiverId,type,content,timestamp,seq}`; ACK `{ids:[…]}` |
+| Voice | `message` frame of type `voice` carries size, SHA-256 and waveform. The receiver then pulls the audio: `voiceRequest {id, offset}` → `voiceChunk` (binary, up to 8 KB) → `voiceDone` once the hash matches |
 
 ### Security
 
@@ -88,6 +91,7 @@ All cryptography comes from the `cryptography` package (native-accelerated via `
 - **Android only.** iOS was deferred; the architecture allows adding it.
 - **Foreground only.** Advertising and scanning pause in the background. Background messaging needs an Android foreground service.
 - **1:1 chats, direct range only.** No groups or multi-hop relaying.
+- **Voice notes take time to send.** About 3 KB per second of audio over Bluetooth, with a progress ring on the bubble. Both phones must stay in range with the app open; transfers resume after a drop. Phones on older versions of the app show the note as not delivered.
 - **Unverified first contact is trust-on-first-use.** Compare safety numbers to rule out a man in the middle at first contact.
 - **Before publishing:** register a Bluetooth SIG company ID (replace `0xFFFF` in `ble_constants.dart`) and configure release signing (currently the debug key).
 - **Android 11 and older:** Location must be switched on for BLE scans to return results.

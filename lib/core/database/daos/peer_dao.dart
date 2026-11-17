@@ -34,8 +34,9 @@ class PeerDao extends DatabaseAccessor<AppDatabase> with _$PeerDaoMixin {
           platform: platform == null ? const Value.absent() : Value(platform),
           // The ID is derived from the key, so a known ID always has the same
           // key; storing it again is safe.
-          identityPublicKey:
-              identityPublicKey == null ? const Value.absent() : Value(identityPublicKey),
+          identityPublicKey: identityPublicKey == null
+              ? const Value.absent()
+              : Value(identityPublicKey),
         ),
       ),
     );
@@ -47,12 +48,13 @@ class PeerDao extends DatabaseAccessor<AppDatabase> with _$PeerDaoMixin {
   Stream<Peer?> watchById(String id) =>
       (select(peers)..where((p) => p.id.equals(id))).watchSingleOrNull();
 
-  Future<void> updateDisplayName(String id, String displayName) =>
-      (update(peers)..where((p) => p.id.equals(id)))
-          .write(PeersCompanion(displayName: Value(displayName)));
+  Future<void> updateDisplayName(String id, String displayName) => (update(
+    peers,
+  )..where((p) => p.id.equals(id))).write(PeersCompanion(displayName: Value(displayName)));
 
-  Future<void> setVerified(String id, bool verified) =>
-      (update(peers)..where((p) => p.id.equals(id))).write(PeersCompanion(verified: Value(verified)));
+  Future<void> setVerified(String id, bool verified) => (update(
+    peers,
+  )..where((p) => p.id.equals(id))).write(PeersCompanion(verified: Value(verified)));
 
   Future<void> setBlocked(String id, bool blocked) =>
       (update(peers)..where((p) => p.id.equals(id))).write(PeersCompanion(blocked: Value(blocked)));

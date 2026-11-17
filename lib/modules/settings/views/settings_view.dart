@@ -5,13 +5,13 @@ import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_motion.dart';
 import '../../../app/widgets/buttons.dart';
-import '../../../app/widgets/glass.dart';
+import '../../../app/widgets/surfaces.dart';
 import '../../../app/widgets/motion.dart';
 import '../../../app/widgets/overlays.dart';
 import '../../../app/widgets/peer_avatar.dart';
 import '../../../app/widgets/pressable.dart';
 import '../../../app/widgets/responsive.dart';
-import '../../../app/widgets/silver_backdrop.dart';
+import '../../../app/widgets/app_scaffold.dart';
 import '../../../core/bluetooth/models/ble_availability.dart';
 import '../../../core/constants/app_constants.dart';
 import '../controllers/settings_controller.dart';
@@ -26,12 +26,12 @@ class SettingsView extends GetView<SettingsController> {
 
     final sections = <Widget>[
       _ProfileCard(onEdit: () => _editName(context)),
-      const GlassSection(title: 'Bluetooth', children: [_BluetoothStatusTiles()]),
-      GlassSection(
+      const Section(title: 'Bluetooth', children: [_BluetoothStatusTiles()]),
+      Section(
         title: 'Privacy & security',
         children: [
           Obx(
-            () => GlassSwitchTile(
+            () => SwitchRow(
               icon: Icons.person_add_alt_rounded,
               title: 'Accept new devices',
               subtitle:
@@ -41,7 +41,7 @@ class SettingsView extends GetView<SettingsController> {
               onChanged: controller.setAcceptUnknownDevices,
             ),
           ),
-          const GlassTile(
+          const ListRow(
             icon: Icons.lock_outline_rounded,
             title: 'End-to-end encrypted',
             subtitle:
@@ -49,14 +49,14 @@ class SettingsView extends GetView<SettingsController> {
                 'and tamper-proof (AES-256-GCM). Each phone proves its identity with a digital '
                 'signature (Ed25519).',
           ),
-          const GlassTile(
+          const ListRow(
             icon: Icons.verified_outlined,
             title: 'Verify your contacts',
             subtitle:
                 'Open a contact and compare the safety number with them in person. '
                 'Matching numbers mean nobody is impersonating them.',
           ),
-          const GlassTile(
+          const ListRow(
             icon: Icons.cloud_off_outlined,
             title: 'Fully offline, stored only here',
             subtitle:
@@ -66,10 +66,10 @@ class SettingsView extends GetView<SettingsController> {
           ),
         ],
       ),
-      const GlassSection(
+      const Section(
         title: 'About',
         children: [
-          GlassTile(
+          ListRow(
             icon: Icons.info_outline_rounded,
             title: AppConstants.appName,
             subtitle: 'Version 1.0.0 · protocol v2',
@@ -77,10 +77,10 @@ class SettingsView extends GetView<SettingsController> {
         ],
       ),
       if (kDebugMode)
-        GlassSection(
+        Section(
           title: 'Debug',
           children: [
-            GlassTile(
+            ListRow(
               icon: Icons.bug_report_outlined,
               title: 'Create test conversation',
               subtitle: 'Local only, to try the chat UI. Messages stay pending.',
@@ -90,9 +90,9 @@ class SettingsView extends GetView<SettingsController> {
         ),
     ];
 
-    return GlassScaffold(
-      appBar: GlassBar.text('Settings'),
-      // Builder: the clearance for the glass bar only exists below the Scaffold.
+    return AppScaffold(
+      appBar: TopBar.text('Settings'),
+      // Builder: the clearance for the top bar only exists below the Scaffold.
       body: Builder(
         builder: (context) {
           final inset = MediaQuery.paddingOf(context);
@@ -110,7 +110,7 @@ class SettingsView extends GetView<SettingsController> {
   }
 
   Future<void> _editName(BuildContext context) {
-    return showGlassDialog<void>(
+    return showAppDialog<void>(
       context,
       (_) => _EditNameDialog(
         initial: controller.displayName.value,
@@ -129,7 +129,7 @@ class _ProfileCard extends GetView<SettingsController> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassPanel(
+    return Panel(
       radius: 24,
       padding: const EdgeInsets.fromLTRB(14, 14, 10, 8),
       child: Column(
@@ -174,7 +174,7 @@ class _ProfileCard extends GetView<SettingsController> {
                 ),
                 const Padding(
                   padding: EdgeInsets.all(8),
-                  child: Icon(Icons.edit_outlined, size: 20, color: AppColors.silver300),
+                  child: Icon(Icons.edit_outlined, size: 20, color: AppColors.textSecondary),
                 ),
               ],
             ),
@@ -185,7 +185,7 @@ class _ProfileCard extends GetView<SettingsController> {
             children: [
               const Padding(
                 padding: EdgeInsets.only(left: 4, right: 10),
-                child: Icon(Icons.fingerprint_rounded, size: 18, color: AppColors.silver400),
+                child: Icon(Icons.fingerprint_rounded, size: 18, color: AppColors.textMuted),
               ),
               Expanded(
                 child: SelectableText(
@@ -196,7 +196,7 @@ class _ProfileCard extends GetView<SettingsController> {
               ),
               IconButton(
                 tooltip: 'Copy',
-                icon: const Icon(Icons.copy_rounded, size: 18, color: AppColors.silver300),
+                icon: const Icon(Icons.copy_rounded, size: 18, color: AppColors.textSecondary),
                 onPressed: controller.copyDeviceId,
               ),
             ],
@@ -229,7 +229,7 @@ class _BluetoothStatusTiles extends GetView<SettingsController> {
       if (!bt.advertisingSupported.value) {
         visibility = "This phone can't advertise. Others can't find it, but it can find them.";
       } else if (bt.isAdvertising.value) {
-        visibility = 'Visible to nearby U Chat users while the app is open';
+        visibility = 'Visible to nearby Blue Chat users while the app is open';
       } else if (bt.advertisingError.value != null) {
         visibility = bt.advertisingError.value!;
       } else {
@@ -238,13 +238,13 @@ class _BluetoothStatusTiles extends GetView<SettingsController> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          GlassTile(
+          ListRow(
             icon: icon,
-            iconColor: ready ? AppColors.bronze400 : AppColors.silver200,
+            iconColor: ready ? AppColors.success : AppColors.textMuted,
             title: 'Status',
             subtitle: status,
             trailing: bt.availability.value == BleAvailability.unauthorized
-                ? GhostButton(
+                ? SecondaryButton(
                     label: bt.permissionDenied.value ? 'Settings' : 'Allow',
                     dense: true,
                     onPressed: controller.fixBluetoothPermission,
@@ -252,14 +252,14 @@ class _BluetoothStatusTiles extends GetView<SettingsController> {
                 : null,
           ),
           const Divider(indent: 16, endIndent: 16),
-          GlassTile(
+          ListRow(
             icon: bt.isAdvertising.value ? Icons.visibility_rounded : Icons.visibility_off_outlined,
-            iconColor: bt.isAdvertising.value ? AppColors.bronze400 : AppColors.silver200,
+            iconColor: bt.isAdvertising.value ? AppColors.success : AppColors.textMuted,
             title: 'Visibility',
             subtitle: visibility,
           ),
           const Divider(indent: 16, endIndent: 16),
-          const GlassTile(
+          const ListRow(
             icon: Icons.info_outline_rounded,
             title: 'Permissions',
             subtitle:
@@ -316,7 +316,7 @@ class _EditNameDialogState extends State<_EditNameDialog> {
       children: [
         Text('Display name', style: theme.textTheme.titleLarge),
         const SizedBox(height: 14),
-        GlassPanel(
+        Panel(
           radius: 16,
           shadow: false,
           padding: const EdgeInsets.fromLTRB(14, 4, 14, 2),
@@ -340,7 +340,7 @@ class _EditNameDialogState extends State<_EditNameDialog> {
                     padding: const EdgeInsets.only(top: 8, left: 4),
                     child: Text(
                       _error!,
-                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.clay),
+                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.danger),
                     ),
                   ),
                 ),
@@ -349,7 +349,7 @@ class _EditNameDialogState extends State<_EditNameDialog> {
         Row(
           children: [
             Expanded(
-              child: GhostButton(
+              child: SecondaryButton(
                 label: 'Cancel',
                 dense: true,
                 onPressed: () => Navigator.of(context).pop(),
@@ -357,12 +357,7 @@ class _EditNameDialogState extends State<_EditNameDialog> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: ChromeButton(
-                label: 'Save',
-                dense: true,
-                glint: false,
-                onPressed: _saving ? null : _submit,
-              ),
+              child: PrimaryButton(label: 'Save', dense: true, onPressed: _saving ? null : _submit),
             ),
           ],
         ),

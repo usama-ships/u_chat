@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,29 +7,33 @@ import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_motion.dart';
 import '../../../app/widgets/buttons.dart';
-import '../../../app/widgets/glass.dart';
+import '../../../app/widgets/surfaces.dart';
 import '../../../app/widgets/motion.dart';
 import '../../../app/widgets/overlays.dart';
 import '../../../app/widgets/peer_avatar.dart';
 import '../../../app/widgets/pressable.dart';
 import '../../../app/widgets/responsive.dart';
-import '../../../app/widgets/silver_backdrop.dart';
+import '../../../app/widgets/app_scaffold.dart';
 import '../../../app/widgets/status_view.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/time_format.dart';
 import '../../../data/models/delivery_status.dart';
+import '../../../data/models/message_type.dart';
 import '../controllers/chat_controller.dart';
 import '../widgets/message_bubble.dart';
+import '../widgets/voice_composer.dart';
 
 class ChatView extends GetView<ChatController> {
   const ChatView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GlassScaffold(
+    return AppScaffold(
       resizeForKeyboard: false,
-      appBar: GlassBar(
+      background: const ChatBackground(),
+      appBar: TopBar(
+        centerTitle: true,
         title: const _ChatTitle(),
         actions: [
           Obx(() {
@@ -38,7 +41,8 @@ class ChatView extends GetView<ChatController> {
             final connected = controller.isConnected;
             return PopupMenuButton<void>(
               tooltip: 'More',
-              icon: const Icon(Icons.more_vert_rounded, color: AppColors.silver200),
+              offset: const Offset(0, 48),
+              icon: const Icon(Icons.more_horiz_rounded, color: AppColors.onHeader),
               itemBuilder: (_) => [
                 PopupMenuItem(onTap: controller.openContact, child: const Text('Contact info')),
                 if (connected)
@@ -84,6 +88,14 @@ class _ChatTitle extends GetView<ChatController> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // Two lines in a fixed-height bar: the text grows only a little.
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.2,
+      child: _title(theme),
+    );
+  }
+
+  Widget _title(ThemeData theme) {
     return Pressable(
       onTap: controller.openContact,
       pressedScale: 0.985,
@@ -92,36 +104,41 @@ class _ChatTitle extends GetView<ChatController> {
         final peer = controller.conversation.value?.peer;
         final connected = controller.isConnected;
         final latency = controller.latencyMs;
+        final connecting = controller.isConnecting;
         final status = connected
-            ? (latency == null ? 'Connected · encrypted' : 'Connected · encrypted · $latency ms')
-            : controller.isConnecting
+            ? (latency == null ? 'Connected · encrypted' : 'Connected · $latency ms')
+            : connecting
             ? 'Connecting…'
             : 'Not connected';
         return Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             if (peer != null) ...[
               PeerAvatar(
                 seed: peer.id,
                 name: peer.displayName,
-                size: 38,
-                online: connected,
+                size: 36,
                 heroTag: 'avatar-${peer.id}',
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
             ],
-            Expanded(
+            Flexible(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Flexible(
                         child: Text(
                           peer?.displayName ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: AppColors.onHeader,
+                            fontSize: 16.5,
+                          ),
                         ),
                       ),
                       if (peer?.verified ?? false) ...[
@@ -129,25 +146,47 @@ class _ChatTitle extends GetView<ChatController> {
                         const Icon(
                           Icons.verified_rounded,
                           size: 16,
-                          color: AppColors.bronze400,
+                          color: AppColors.highlight,
                           semanticLabel: 'Verified',
                         ),
                       ],
                     ],
                   ),
-                  AnimatedSwitcher(
-                    duration: Motion.medium,
-                    layoutBuilder: startAlignedLayout,
-                    transitionBuilder: fadeLiftTransition,
-                    child: Text(
-                      status,
-                      key: ValueKey(status),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: connected ? AppColors.bronze300 : AppColors.silver400,
+                  const SizedBox(height: 2),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedContainer(
+                        duration: Motion.medium,
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: connected
+                              ? AppColors.success
+                              : connecting
+                              ? AppColors.highlight
+                              : AppColors.onHeaderMuted.withValues(alpha: 0.5),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: AnimatedSwitcher(
+                          duration: Motion.medium,
+                          layoutBuilder: startAlignedLayout,
+                          transitionBuilder: fadeLiftTransition,
+                          child: Text(
+                            status,
+                            key: ValueKey(status),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: AppColors.onHeaderMuted,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -183,25 +222,20 @@ class _ConnectionBanner extends GetView<ChatController> {
           ),
           child: hidden
               ? const SizedBox(key: ValueKey('hidden'), width: double.infinity)
-              : GlassPanel(
+              : Panel(
                   key: const ValueKey('banner'),
                   radius: 18,
-                  blur: true,
-                  fill: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.graphite700.withValues(alpha: 0.94),
-                      AppColors.graphite800.withValues(alpha: 0.90),
-                    ],
-                  ),
+                  color: AppColors.surfaceRaised,
+                  shadow: true,
                   padding: const EdgeInsets.fromLTRB(14, 8, 8, 8),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.bluetooth_disabled_rounded,
+                      Icon(
+                        connecting
+                            ? Icons.bluetooth_searching_rounded
+                            : Icons.bluetooth_disabled_rounded,
                         size: 18,
-                        color: AppColors.silver300,
+                        color: connecting ? AppColors.accent : AppColors.textMuted,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -213,7 +247,9 @@ class _ConnectionBanner extends GetView<ChatController> {
                                 ? 'Looking for this device nearby…'
                                 : 'Messages send automatically once connected.',
                             key: ValueKey(connecting),
-                            style: theme.textTheme.bodySmall,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
@@ -227,7 +263,7 @@ class _ConnectionBanner extends GetView<ChatController> {
                                 padding: EdgeInsets.all(9),
                                 child: BusySpinner(),
                               )
-                            : ChromeButton(
+                            : PrimaryButton(
                                 key: const ValueKey('connect'),
                                 label: 'Connect',
                                 dense: true,
@@ -325,7 +361,7 @@ class _MessageListState extends State<_MessageList> {
               key: const ValueKey('load-more'),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: GhostButton(
+                child: SecondaryButton(
                   label: 'Load earlier messages',
                   dense: true,
                   onPressed: controller.loadMore,
@@ -340,8 +376,12 @@ class _MessageListState extends State<_MessageList> {
           final showDay = previous == null || !isSameDay(previous.sortAt, message.sortAt);
 
           final introOrder = _intro.remove(message.id);
+          final peer = controller.conversation.value?.peer;
           final bubble = MessageBubble(
             message: message,
+            avatar: peer == null
+                ? null
+                : PeerAvatar(seed: peer.id, name: peer.displayName, size: 30),
             groupedWithPrevious: !showDay && _sameGroup(previous, message),
             groupedWithNext: next != null && _sameGroup(message, next),
             arriving: _arriving.remove(message.id),
@@ -366,31 +406,32 @@ class _MessageListState extends State<_MessageList> {
   }
 
   void _showActions(BuildContext context, Message message) {
-    showGlassSheet(
+    showActionSheet(
       context,
       (sheetContext) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          GlassTile(
-            icon: Icons.copy_rounded,
-            title: 'Copy text',
-            onTap: () {
-              Navigator.pop(sheetContext);
-              controller.copy(message);
-            },
-          ),
+          if (message.type == MessageType.text)
+            ListRow(
+              icon: Icons.copy_rounded,
+              title: 'Copy text',
+              onTap: () {
+                Navigator.pop(sheetContext);
+                controller.copy(message);
+              },
+            ),
           if (message.isOutgoing && message.status == DeliveryStatus.failed)
-            GlassTile(
+            ListRow(
               icon: Icons.refresh_rounded,
-              iconColor: AppColors.bronze400,
+              iconColor: AppColors.accent,
               title: 'Retry sending',
               onTap: () {
                 Navigator.pop(sheetContext);
                 controller.retry(message);
               },
             ),
-          GlassTile(icon: Icons.info_outline_rounded, title: _details(message)),
+          ListRow(icon: Icons.info_outline_rounded, title: _details(message)),
         ],
       ),
     );
@@ -403,6 +444,7 @@ class _MessageListState extends State<_MessageList> {
       DeliveryStatus.pending => 'Waiting for connection',
       DeliveryStatus.sending => 'Sending',
       DeliveryStatus.sent => 'Sent, waiting for confirmation',
+      DeliveryStatus.transferring => 'Sending audio',
       DeliveryStatus.delivered => 'Delivered',
       DeliveryStatus.failed => 'Not delivered',
       DeliveryStatus.received => 'Received',
@@ -433,19 +475,20 @@ class _DayChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      child: GlassPill(
+      child: Pill(
         child: Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.silver300),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondary),
         ),
       ),
     );
   }
 }
 
-/// Frosted strip along the bottom of the chat. Rides on top of the keyboard.
-class _BottomGlass extends StatelessWidget {
-  const _BottomGlass({required this.child});
+/// The strip along the bottom of the chat. Messages fade out underneath it
+/// instead of meeting a hard edge. Rides on top of the keyboard.
+class _BottomBar extends StatelessWidget {
+  const _BottomBar({super.key, required this.child});
 
   final Widget child;
 
@@ -453,22 +496,21 @@ class _BottomGlass extends StatelessWidget {
   Widget build(BuildContext context) {
     final keyboard = MediaQuery.viewInsetsOf(context).bottom;
     final gutter = Responsive.gutter(context);
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppColors.graphite800.withValues(alpha: 0.62),
-            border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.09))),
-          ),
-          child: Padding(
-            padding: EdgeInsets.only(bottom: keyboard),
-            child: SafeArea(
-              top: false,
-              bottom: keyboard == 0,
-              child: Padding(padding: EdgeInsets.fromLTRB(gutter, 10, gutter, 10), child: child),
-            ),
-          ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: const [0, 0.35],
+          colors: [AppColors.chatBottom.withValues(alpha: 0), AppColors.chatBottom],
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: keyboard),
+        child: SafeArea(
+          top: false,
+          bottom: keyboard == 0,
+          child: Padding(padding: EdgeInsets.fromLTRB(gutter, 14, gutter, 10), child: child),
         ),
       ),
     );
@@ -480,13 +522,13 @@ class _BlockedBar extends GetView<ChatController> {
 
   @override
   Widget build(BuildContext context) {
-    return _BottomGlass(
+    return _BottomBar(
       child: Row(
         children: [
-          const Icon(Icons.block_rounded, size: 18, color: AppColors.clay),
+          const Icon(Icons.block_rounded, size: 18, color: AppColors.danger),
           const SizedBox(width: 10),
           const Expanded(child: Text('You blocked this contact.')),
-          GhostButton(label: 'Unblock', dense: true, onPressed: controller.unblock),
+          SecondaryButton(label: 'Unblock', dense: true, onPressed: controller.unblock),
         ],
       ),
     );
@@ -498,44 +540,102 @@ class _Composer extends GetView<ChatController> {
 
   @override
   Widget build(BuildContext context) {
-    return _BottomGlass(
+    return Obx(
+      () => AnimatedSwitcher(
+        duration: Motion.medium,
+        switchInCurve: Motion.ease,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween(begin: const Offset(0, 0.25), end: Offset.zero).animate(animation),
+            child: child,
+          ),
+        ),
+        child: controller.recordingMode.value == RecordingMode.locked
+            ? const _BottomBar(key: ValueKey('note'), child: VoiceNoteCard())
+            : const _ComposerRow(key: ValueKey('row')),
+      ),
+    );
+  }
+}
+
+class _ComposerRow extends GetView<ChatController> {
+  const _ComposerRow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _BottomBar(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
-            child: GlassPanel(
-              radius: 24,
-              shadow: false,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-              child: TextField(
-                controller: controller.inputController,
-                minLines: 1,
-                maxLines: 5,
-                textCapitalization: TextCapitalization.sentences,
-                inputFormatters: [LengthLimitingTextInputFormatter(AppConstants.maxTextLength)],
-                style: Theme.of(context).textTheme.bodyLarge,
-                decoration: const InputDecoration(hintText: 'Message'),
+            child: Obx(
+              () => AnimatedSwitcher(
+                duration: Motion.medium,
+                transitionBuilder: fadeLiftTransition,
+                child: controller.recordingMode.value == RecordingMode.idle
+                    ? const _MessageField(key: ValueKey('field'))
+                    : const RecordingPanel(key: ValueKey('recording')),
               ),
             ),
           ),
           const SizedBox(width: 10),
-          Obx(
-            () => _SendButton(
-              onPressed: controller.canSend.value && !controller.isSending.value
-                  ? controller.send
-                  : null,
-            ),
-          ),
+          Obx(() {
+            final mode = controller.recordingMode.value;
+            final Widget button;
+            if (mode == RecordingMode.locked) {
+              button = _SendButton(
+                key: const ValueKey('send'),
+                onPressed: controller.finishRecording,
+              );
+            } else if (mode == RecordingMode.idle && controller.canSend.value) {
+              button = _SendButton(
+                key: const ValueKey('send'),
+                onPressed: controller.isSending.value ? null : controller.send,
+              );
+            } else {
+              // Stays mounted while held, so it keeps receiving the finger.
+              button = const MicButton(key: ValueKey('mic'));
+            }
+            return AnimatedSwitcher(
+              duration: Motion.fast,
+              transitionBuilder: popTransition,
+              child: button,
+            );
+          }),
         ],
       ),
     );
   }
 }
 
-/// Dormant glass until there's something to send, then turns to polished
-/// metal and tilts up, ready to go.
+class _MessageField extends GetView<ChatController> {
+  const _MessageField({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Panel(
+      radius: 26,
+      color: AppColors.surface,
+      borderColor: AppColors.glassBorder,
+      shadow: true,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+      child: TextField(
+        controller: controller.inputController,
+        minLines: 1,
+        maxLines: 5,
+        textCapitalization: TextCapitalization.sentences,
+        inputFormatters: [LengthLimitingTextInputFormatter(AppConstants.maxTextLength)],
+        style: Theme.of(context).textTheme.bodyLarge,
+        decoration: const InputDecoration(hintText: 'Type a message'),
+      ),
+    );
+  }
+}
+
+/// Quiet until there's something to send, then fills with the accent.
 class _SendButton extends StatelessWidget {
-  const _SendButton({required this.onPressed});
+  const _SendButton({super.key, required this.onPressed});
 
   final VoidCallback? onPressed;
 
@@ -559,25 +659,20 @@ class _SendButton extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: ready ? AppColors.silverMetal : AppColors.glassFill,
-              border: Border.all(color: Colors.white.withValues(alpha: ready ? 0.3 : 0.1)),
+              gradient: ready ? AppColors.accentGradient : null,
+              color: ready ? null : AppColors.surface,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.silver300.withValues(alpha: ready ? 0.28 : 0),
+                  color: AppColors.accent.withValues(alpha: ready ? 0.35 : 0.08),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: AnimatedRotation(
-              duration: Motion.medium,
-              curve: Motion.pop,
-              turns: ready ? -0.08 : 0,
-              child: Icon(
-                Icons.send_rounded,
-                size: 21,
-                color: ready ? AppColors.graphite900 : AppColors.silver500,
-              ),
+            child: Icon(
+              Icons.send_rounded,
+              size: 21,
+              color: ready ? AppColors.onAccent : AppColors.textFaint,
             ),
           ),
         ),

@@ -7,7 +7,7 @@ import 'advertisement_codec.dart';
 import 'ble_constants.dart';
 import 'models/discovered_device.dart';
 
-/// Scans for nearby U Chat devices and keeps a de-duplicated, self-expiring
+/// Scans for nearby Blue Chat devices and keeps a de-duplicated, self-expiring
 /// list of them.
 ///
 /// The scan has no OS-level filter, because our advertisement carries no

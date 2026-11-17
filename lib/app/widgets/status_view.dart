@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
-import 'glass.dart';
 import 'motion.dart';
 
 /// Full-area message for empty, error and permission states.
@@ -20,7 +19,7 @@ class StatusView extends StatelessWidget {
   final String? body;
   final Widget? action;
 
-  /// Replaces the icon orb.
+  /// Replaces the icon badge.
   final Widget? illustration;
 
   @override
@@ -31,34 +30,30 @@ class StatusView extends StatelessWidget {
       child: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(32, inset.top + 24, 32, inset.bottom + 24),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
+          constraints: const BoxConstraints(maxWidth: 400),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Entrance(child: illustration ?? _Orb(icon: icon)),
+              Entrance(child: illustration ?? _Badge(icon: icon)),
               const SizedBox(height: 24),
               Entrance(
-                delay: const Duration(milliseconds: 80),
-                child: Text(
-                  title,
-                  style: theme.textTheme.titleLarge,
-                  textAlign: TextAlign.center,
-                ),
+                delay: const Duration(milliseconds: 60),
+                child: Text(title, style: theme.textTheme.titleLarge, textAlign: TextAlign.center),
               ),
               if (body != null) ...[
                 const SizedBox(height: 8),
                 Entrance(
-                  delay: const Duration(milliseconds: 140),
+                  delay: const Duration(milliseconds: 100),
                   child: Text(
                     body!,
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.silver300),
+                    style: theme.textTheme.bodyMedium,
                   ),
                 ),
               ],
               if (action != null) ...[
-                const SizedBox(height: 24),
-                Entrance(delay: const Duration(milliseconds: 200), child: action!),
+                const SizedBox(height: 26),
+                Entrance(delay: const Duration(milliseconds: 140), child: action!),
               ],
             ],
           ),
@@ -68,29 +63,18 @@ class StatusView extends StatelessWidget {
   }
 }
 
-class _Orb extends StatelessWidget {
-  const _Orb({required this.icon});
+class _Badge extends StatelessWidget {
+  const _Badge({required this.icon});
 
   final IconData icon;
 
   @override
   Widget build(BuildContext context) {
-    return Looping(
-      period: const Duration(milliseconds: 2600),
-      reverse: true,
-      restingValue: 0.5,
-      child: SizedBox(
-        width: 88,
-        height: 88,
-        child: GlassPanel(
-          radius: 44,
-          child: Center(child: Icon(icon, size: 36, color: AppColors.silver200)),
-        ),
-      ),
-      builder: (context, t, child) {
-        final eased = Curves.easeInOut.transform(t);
-        return Transform.translate(offset: Offset(0, -4 * eased), child: child);
-      },
+    return Container(
+      width: 84,
+      height: 84,
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.accentSoft),
+      child: Icon(icon, size: 36, color: AppColors.accentLight),
     );
   }
 }

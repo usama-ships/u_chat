@@ -1,6 +1,6 @@
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart' show Peripheral;
 
-/// A nearby phone running U Chat, seen in a scan.
+/// A nearby phone running Blue Chat, seen in a scan.
 class DiscoveredDevice {
   const DiscoveredDevice({
     required this.deviceIdPrefix,

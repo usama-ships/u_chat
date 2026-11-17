@@ -17,18 +17,13 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _displayNameMeta = const VerificationMeta(
-    'displayName',
-  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta('displayName');
   @override
   late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
     'display_name',
     aliasedName,
     false,
-    additionalChecks: GeneratedColumn.checkTextLength(
-      minTextLength: 1,
-      maxTextLength: 64,
-    ),
+    additionalChecks: GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 64),
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
@@ -36,17 +31,14 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     'identityPublicKey',
   );
   @override
-  late final GeneratedColumn<Uint8List> identityPublicKey =
-      GeneratedColumn<Uint8List>(
-        'identity_public_key',
-        aliasedName,
-        true,
-        type: DriftSqlType.blob,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _verifiedMeta = const VerificationMeta(
-    'verified',
+  late final GeneratedColumn<Uint8List> identityPublicKey = GeneratedColumn<Uint8List>(
+    'identity_public_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.blob,
+    requiredDuringInsert: false,
   );
+  static const VerificationMeta _verifiedMeta = const VerificationMeta('verified');
   @override
   late final GeneratedColumn<bool> verified = GeneratedColumn<bool>(
     'verified',
@@ -54,14 +46,10 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     false,
     type: DriftSqlType.bool,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("verified" IN (0, 1))',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("verified" IN (0, 1))'),
     defaultValue: const Constant(false),
   );
-  static const VerificationMeta _platformMeta = const VerificationMeta(
-    'platform',
-  );
+  static const VerificationMeta _platformMeta = const VerificationMeta('platform');
   @override
   late final GeneratedColumn<String> platform = GeneratedColumn<String>(
     'platform',
@@ -70,9 +58,7 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _firstSeenAtMeta = const VerificationMeta(
-    'firstSeenAt',
-  );
+  static const VerificationMeta _firstSeenAtMeta = const VerificationMeta('firstSeenAt');
   @override
   late final GeneratedColumn<int> firstSeenAt = GeneratedColumn<int>(
     'first_seen_at',
@@ -81,9 +67,7 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _lastSeenAtMeta = const VerificationMeta(
-    'lastSeenAt',
-  );
+  static const VerificationMeta _lastSeenAtMeta = const VerificationMeta('lastSeenAt');
   @override
   late final GeneratedColumn<int> lastSeenAt = GeneratedColumn<int>(
     'last_seen_at',
@@ -92,9 +76,7 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _blockedMeta = const VerificationMeta(
-    'blocked',
-  );
+  static const VerificationMeta _blockedMeta = const VerificationMeta('blocked');
   @override
   late final GeneratedColumn<bool> blocked = GeneratedColumn<bool>(
     'blocked',
@@ -102,9 +84,7 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     false,
     type: DriftSqlType.bool,
     requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("blocked" IN (0, 1))',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("blocked" IN (0, 1))'),
     defaultValue: const Constant(false),
   );
   @override
@@ -124,10 +104,7 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
   String get actualTableName => $name;
   static const String $name = 'peers';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Peer> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<Peer> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -138,10 +115,7 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     if (data.containsKey('display_name')) {
       context.handle(
         _displayNameMeta,
-        displayName.isAcceptableOrUnknown(
-          data['display_name']!,
-          _displayNameMeta,
-        ),
+        displayName.isAcceptableOrUnknown(data['display_name']!, _displayNameMeta),
       );
     } else if (isInserting) {
       context.missing(_displayNameMeta);
@@ -170,10 +144,7 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     if (data.containsKey('first_seen_at')) {
       context.handle(
         _firstSeenAtMeta,
-        firstSeenAt.isAcceptableOrUnknown(
-          data['first_seen_at']!,
-          _firstSeenAtMeta,
-        ),
+        firstSeenAt.isAcceptableOrUnknown(data['first_seen_at']!, _firstSeenAtMeta),
       );
     } else if (isInserting) {
       context.missing(_firstSeenAtMeta);
@@ -181,19 +152,13 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
     if (data.containsKey('last_seen_at')) {
       context.handle(
         _lastSeenAtMeta,
-        lastSeenAt.isAcceptableOrUnknown(
-          data['last_seen_at']!,
-          _lastSeenAtMeta,
-        ),
+        lastSeenAt.isAcceptableOrUnknown(data['last_seen_at']!, _lastSeenAtMeta),
       );
     } else if (isInserting) {
       context.missing(_lastSeenAtMeta);
     }
     if (data.containsKey('blocked')) {
-      context.handle(
-        _blockedMeta,
-        blocked.isAcceptableOrUnknown(data['blocked']!, _blockedMeta),
-      );
+      context.handle(_blockedMeta, blocked.isAcceptableOrUnknown(data['blocked']!, _blockedMeta));
     }
     return context;
   }
@@ -204,10 +169,7 @@ class $PeersTable extends Peers with TableInfo<$PeersTable, Peer> {
   Peer map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Peer(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
+      id: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       displayName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}display_name'],
@@ -298,26 +260,19 @@ class Peer extends DataClass implements Insertable<Peer> {
           ? const Value.absent()
           : Value(identityPublicKey),
       verified: Value(verified),
-      platform: platform == null && nullToAbsent
-          ? const Value.absent()
-          : Value(platform),
+      platform: platform == null && nullToAbsent ? const Value.absent() : Value(platform),
       firstSeenAt: Value(firstSeenAt),
       lastSeenAt: Value(lastSeenAt),
       blocked: Value(blocked),
     );
   }
 
-  factory Peer.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory Peer.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Peer(
       id: serializer.fromJson<String>(json['id']),
       displayName: serializer.fromJson<String>(json['displayName']),
-      identityPublicKey: serializer.fromJson<Uint8List?>(
-        json['identityPublicKey'],
-      ),
+      identityPublicKey: serializer.fromJson<Uint8List?>(json['identityPublicKey']),
       verified: serializer.fromJson<bool>(json['verified']),
       platform: serializer.fromJson<String?>(json['platform']),
       firstSeenAt: serializer.fromJson<int>(json['firstSeenAt']),
@@ -352,9 +307,7 @@ class Peer extends DataClass implements Insertable<Peer> {
   }) => Peer(
     id: id ?? this.id,
     displayName: displayName ?? this.displayName,
-    identityPublicKey: identityPublicKey.present
-        ? identityPublicKey.value
-        : this.identityPublicKey,
+    identityPublicKey: identityPublicKey.present ? identityPublicKey.value : this.identityPublicKey,
     verified: verified ?? this.verified,
     platform: platform.present ? platform.value : this.platform,
     firstSeenAt: firstSeenAt ?? this.firstSeenAt,
@@ -364,20 +317,14 @@ class Peer extends DataClass implements Insertable<Peer> {
   Peer copyWithCompanion(PeersCompanion data) {
     return Peer(
       id: data.id.present ? data.id.value : this.id,
-      displayName: data.displayName.present
-          ? data.displayName.value
-          : this.displayName,
+      displayName: data.displayName.present ? data.displayName.value : this.displayName,
       identityPublicKey: data.identityPublicKey.present
           ? data.identityPublicKey.value
           : this.identityPublicKey,
       verified: data.verified.present ? data.verified.value : this.verified,
       platform: data.platform.present ? data.platform.value : this.platform,
-      firstSeenAt: data.firstSeenAt.present
-          ? data.firstSeenAt.value
-          : this.firstSeenAt,
-      lastSeenAt: data.lastSeenAt.present
-          ? data.lastSeenAt.value
-          : this.lastSeenAt,
+      firstSeenAt: data.firstSeenAt.present ? data.firstSeenAt.value : this.firstSeenAt,
+      lastSeenAt: data.lastSeenAt.present ? data.lastSeenAt.value : this.lastSeenAt,
       blocked: data.blocked.present ? data.blocked.value : this.blocked,
     );
   }
@@ -414,10 +361,7 @@ class Peer extends DataClass implements Insertable<Peer> {
       (other is Peer &&
           other.id == this.id &&
           other.displayName == this.displayName &&
-          $driftBlobEquality.equals(
-            other.identityPublicKey,
-            this.identityPublicKey,
-          ) &&
+          $driftBlobEquality.equals(other.identityPublicKey, this.identityPublicKey) &&
           other.verified == this.verified &&
           other.platform == this.platform &&
           other.firstSeenAt == this.firstSeenAt &&
@@ -558,8 +502,7 @@ class PeersCompanion extends UpdateCompanion<Peer> {
   }
 }
 
-class $ConversationsTable extends Conversations
-    with TableInfo<$ConversationsTable, Conversation> {
+class $ConversationsTable extends Conversations with TableInfo<$ConversationsTable, Conversation> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -581,13 +524,9 @@ class $ConversationsTable extends Conversations
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'UNIQUE REFERENCES peers (id)',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE REFERENCES peers (id)'),
   );
-  static const VerificationMeta _lastMessageIdMeta = const VerificationMeta(
-    'lastMessageId',
-  );
+  static const VerificationMeta _lastMessageIdMeta = const VerificationMeta('lastMessageId');
   @override
   late final GeneratedColumn<String> lastMessageId = GeneratedColumn<String>(
     'last_message_id',
@@ -596,20 +535,18 @@ class $ConversationsTable extends Conversations
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _lastMessagePreviewMeta =
-      const VerificationMeta('lastMessagePreview');
-  @override
-  late final GeneratedColumn<String> lastMessagePreview =
-      GeneratedColumn<String>(
-        'last_message_preview',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _lastMessageAtMeta = const VerificationMeta(
-    'lastMessageAt',
+  static const VerificationMeta _lastMessagePreviewMeta = const VerificationMeta(
+    'lastMessagePreview',
   );
+  @override
+  late final GeneratedColumn<String> lastMessagePreview = GeneratedColumn<String>(
+    'last_message_preview',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastMessageAtMeta = const VerificationMeta('lastMessageAt');
   @override
   late final GeneratedColumn<int> lastMessageAt = GeneratedColumn<int>(
     'last_message_at',
@@ -618,9 +555,7 @@ class $ConversationsTable extends Conversations
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _unreadCountMeta = const VerificationMeta(
-    'unreadCount',
-  );
+  static const VerificationMeta _unreadCountMeta = const VerificationMeta('unreadCount');
   @override
   late final GeneratedColumn<int> unreadCount = GeneratedColumn<int>(
     'unread_count',
@@ -630,9 +565,7 @@ class $ConversationsTable extends Conversations
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
     'created_at',
@@ -669,20 +602,14 @@ class $ConversationsTable extends Conversations
       context.missing(_idMeta);
     }
     if (data.containsKey('peer_id')) {
-      context.handle(
-        _peerIdMeta,
-        peerId.isAcceptableOrUnknown(data['peer_id']!, _peerIdMeta),
-      );
+      context.handle(_peerIdMeta, peerId.isAcceptableOrUnknown(data['peer_id']!, _peerIdMeta));
     } else if (isInserting) {
       context.missing(_peerIdMeta);
     }
     if (data.containsKey('last_message_id')) {
       context.handle(
         _lastMessageIdMeta,
-        lastMessageId.isAcceptableOrUnknown(
-          data['last_message_id']!,
-          _lastMessageIdMeta,
-        ),
+        lastMessageId.isAcceptableOrUnknown(data['last_message_id']!, _lastMessageIdMeta),
       );
     }
     if (data.containsKey('last_message_preview')) {
@@ -697,19 +624,13 @@ class $ConversationsTable extends Conversations
     if (data.containsKey('last_message_at')) {
       context.handle(
         _lastMessageAtMeta,
-        lastMessageAt.isAcceptableOrUnknown(
-          data['last_message_at']!,
-          _lastMessageAtMeta,
-        ),
+        lastMessageAt.isAcceptableOrUnknown(data['last_message_at']!, _lastMessageAtMeta),
       );
     }
     if (data.containsKey('unread_count')) {
       context.handle(
         _unreadCountMeta,
-        unreadCount.isAcceptableOrUnknown(
-          data['unread_count']!,
-          _unreadCountMeta,
-        ),
+        unreadCount.isAcceptableOrUnknown(data['unread_count']!, _unreadCountMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -729,10 +650,7 @@ class $ConversationsTable extends Conversations
   Conversation map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Conversation(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
+      id: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       peerId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}peer_id'],
@@ -821,18 +739,13 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     );
   }
 
-  factory Conversation.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory Conversation.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Conversation(
       id: serializer.fromJson<String>(json['id']),
       peerId: serializer.fromJson<String>(json['peerId']),
       lastMessageId: serializer.fromJson<String?>(json['lastMessageId']),
-      lastMessagePreview: serializer.fromJson<String?>(
-        json['lastMessagePreview'],
-      ),
+      lastMessagePreview: serializer.fromJson<String?>(json['lastMessagePreview']),
       lastMessageAt: serializer.fromJson<int?>(json['lastMessageAt']),
       unreadCount: serializer.fromJson<int>(json['unreadCount']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
@@ -863,15 +776,11 @@ class Conversation extends DataClass implements Insertable<Conversation> {
   }) => Conversation(
     id: id ?? this.id,
     peerId: peerId ?? this.peerId,
-    lastMessageId: lastMessageId.present
-        ? lastMessageId.value
-        : this.lastMessageId,
+    lastMessageId: lastMessageId.present ? lastMessageId.value : this.lastMessageId,
     lastMessagePreview: lastMessagePreview.present
         ? lastMessagePreview.value
         : this.lastMessagePreview,
-    lastMessageAt: lastMessageAt.present
-        ? lastMessageAt.value
-        : this.lastMessageAt,
+    lastMessageAt: lastMessageAt.present ? lastMessageAt.value : this.lastMessageAt,
     unreadCount: unreadCount ?? this.unreadCount,
     createdAt: createdAt ?? this.createdAt,
   );
@@ -879,18 +788,12 @@ class Conversation extends DataClass implements Insertable<Conversation> {
     return Conversation(
       id: data.id.present ? data.id.value : this.id,
       peerId: data.peerId.present ? data.peerId.value : this.peerId,
-      lastMessageId: data.lastMessageId.present
-          ? data.lastMessageId.value
-          : this.lastMessageId,
+      lastMessageId: data.lastMessageId.present ? data.lastMessageId.value : this.lastMessageId,
       lastMessagePreview: data.lastMessagePreview.present
           ? data.lastMessagePreview.value
           : this.lastMessagePreview,
-      lastMessageAt: data.lastMessageAt.present
-          ? data.lastMessageAt.value
-          : this.lastMessageAt,
-      unreadCount: data.unreadCount.present
-          ? data.unreadCount.value
-          : this.unreadCount,
+      lastMessageAt: data.lastMessageAt.present ? data.lastMessageAt.value : this.lastMessageAt,
+      unreadCount: data.unreadCount.present ? data.unreadCount.value : this.unreadCount,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -977,8 +880,7 @@ class ConversationsCompanion extends UpdateCompanion<Conversation> {
       if (id != null) 'id': id,
       if (peerId != null) 'peer_id': peerId,
       if (lastMessageId != null) 'last_message_id': lastMessageId,
-      if (lastMessagePreview != null)
-        'last_message_preview': lastMessagePreview,
+      if (lastMessagePreview != null) 'last_message_preview': lastMessagePreview,
       if (lastMessageAt != null) 'last_message_at': lastMessageAt,
       if (unreadCount != null) 'unread_count': unreadCount,
       if (createdAt != null) 'created_at': createdAt,
@@ -1068,9 +970,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _conversationIdMeta = const VerificationMeta(
-    'conversationId',
-  );
+  static const VerificationMeta _conversationIdMeta = const VerificationMeta('conversationId');
   @override
   late final GeneratedColumn<String> conversationId = GeneratedColumn<String>(
     'conversation_id',
@@ -1078,13 +978,9 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES conversations (id)',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('REFERENCES conversations (id)'),
   );
-  static const VerificationMeta _senderIdMeta = const VerificationMeta(
-    'senderId',
-  );
+  static const VerificationMeta _senderIdMeta = const VerificationMeta('senderId');
   @override
   late final GeneratedColumn<String> senderId = GeneratedColumn<String>(
     'sender_id',
@@ -1093,9 +989,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _receiverIdMeta = const VerificationMeta(
-    'receiverId',
-  );
+  static const VerificationMeta _receiverIdMeta = const VerificationMeta('receiverId');
   @override
   late final GeneratedColumn<String> receiverId = GeneratedColumn<String>(
     'receiver_id',
@@ -1105,17 +999,14 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     requiredDuringInsert: true,
   );
   @override
-  late final GeneratedColumnWithTypeConverter<MessageType, String> type =
-      GeneratedColumn<String>(
-        'type',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<MessageType>($MessagesTable.$convertertype);
-  static const VerificationMeta _contentMeta = const VerificationMeta(
-    'content',
-  );
+  late final GeneratedColumnWithTypeConverter<MessageType, String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  ).withConverter<MessageType>($MessagesTable.$convertertype);
+  static const VerificationMeta _contentMeta = const VerificationMeta('content');
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
     'content',
@@ -1133,9 +1024,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _receivedAtMeta = const VerificationMeta(
-    'receivedAt',
-  );
+  static const VerificationMeta _receivedAtMeta = const VerificationMeta('receivedAt');
   @override
   late final GeneratedColumn<int> receivedAt = GeneratedColumn<int>(
     'received_at',
@@ -1171,9 +1060,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
         type: DriftSqlType.string,
         requiredDuringInsert: true,
       ).withConverter<DeliveryStatus>($MessagesTable.$converterstatus);
-  static const VerificationMeta _retryCountMeta = const VerificationMeta(
-    'retryCount',
-  );
+  static const VerificationMeta _retryCountMeta = const VerificationMeta('retryCount');
   @override
   late final GeneratedColumn<int> retryCount = GeneratedColumn<int>(
     'retry_count',
@@ -1183,9 +1070,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _isOutgoingMeta = const VerificationMeta(
-    'isOutgoing',
-  );
+  static const VerificationMeta _isOutgoingMeta = const VerificationMeta('isOutgoing');
   @override
   late final GeneratedColumn<bool> isOutgoing = GeneratedColumn<bool>(
     'is_outgoing',
@@ -1193,9 +1078,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     false,
     type: DriftSqlType.bool,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_outgoing" IN (0, 1))',
-    ),
+    defaultConstraints: GeneratedColumn.constraintIsAlways('CHECK ("is_outgoing" IN (0, 1))'),
   );
   @override
   List<GeneratedColumn> get $columns => [
@@ -1219,10 +1102,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
   String get actualTableName => $name;
   static const String $name = 'messages';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Message> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<Message> instance, {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -1233,10 +1113,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
     if (data.containsKey('conversation_id')) {
       context.handle(
         _conversationIdMeta,
-        conversationId.isAcceptableOrUnknown(
-          data['conversation_id']!,
-          _conversationIdMeta,
-        ),
+        conversationId.isAcceptableOrUnknown(data['conversation_id']!, _conversationIdMeta),
       );
     } else if (isInserting) {
       context.missing(_conversationIdMeta);
@@ -1258,18 +1135,12 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
       context.missing(_receiverIdMeta);
     }
     if (data.containsKey('content')) {
-      context.handle(
-        _contentMeta,
-        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
-      );
+      context.handle(_contentMeta, content.isAcceptableOrUnknown(data['content']!, _contentMeta));
     } else if (isInserting) {
       context.missing(_contentMeta);
     }
     if (data.containsKey('sent_at')) {
-      context.handle(
-        _sentAtMeta,
-        sentAt.isAcceptableOrUnknown(data['sent_at']!, _sentAtMeta),
-      );
+      context.handle(_sentAtMeta, sentAt.isAcceptableOrUnknown(data['sent_at']!, _sentAtMeta));
     } else if (isInserting) {
       context.missing(_sentAtMeta);
     }
@@ -1280,18 +1151,12 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
       );
     }
     if (data.containsKey('sort_at')) {
-      context.handle(
-        _sortAtMeta,
-        sortAt.isAcceptableOrUnknown(data['sort_at']!, _sortAtMeta),
-      );
+      context.handle(_sortAtMeta, sortAt.isAcceptableOrUnknown(data['sort_at']!, _sortAtMeta));
     } else if (isInserting) {
       context.missing(_sortAtMeta);
     }
     if (data.containsKey('seq')) {
-      context.handle(
-        _seqMeta,
-        seq.isAcceptableOrUnknown(data['seq']!, _seqMeta),
-      );
+      context.handle(_seqMeta, seq.isAcceptableOrUnknown(data['seq']!, _seqMeta));
     } else if (isInserting) {
       context.missing(_seqMeta);
     }
@@ -1318,10 +1183,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
   Message map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Message(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
+      id: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       conversationId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}conversation_id'],
@@ -1335,10 +1197,7 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
         data['${effectivePrefix}receiver_id'],
       )!,
       type: $MessagesTable.$convertertype.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}type'],
-        )!,
+        attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}type'])!,
       ),
       content: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -1356,15 +1215,9 @@ class $MessagesTable extends Messages with TableInfo<$MessagesTable, Message> {
         DriftSqlType.int,
         data['${effectivePrefix}sort_at'],
       )!,
-      seq: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}seq'],
-      )!,
+      seq: attachedDatabase.typeMapping.read(DriftSqlType.int, data['${effectivePrefix}seq'])!,
       status: $MessagesTable.$converterstatus.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}status'],
-        )!,
+        attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}status'])!,
       ),
       retryCount: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -1444,9 +1297,7 @@ class Message extends DataClass implements Insertable<Message> {
     map['sort_at'] = Variable<int>(sortAt);
     map['seq'] = Variable<int>(seq);
     {
-      map['status'] = Variable<String>(
-        $MessagesTable.$converterstatus.toSql(status),
-      );
+      map['status'] = Variable<String>($MessagesTable.$converterstatus.toSql(status));
     }
     map['retry_count'] = Variable<int>(retryCount);
     map['is_outgoing'] = Variable<bool>(isOutgoing);
@@ -1462,9 +1313,7 @@ class Message extends DataClass implements Insertable<Message> {
       type: Value(type),
       content: Value(content),
       sentAt: Value(sentAt),
-      receivedAt: receivedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(receivedAt),
+      receivedAt: receivedAt == null && nullToAbsent ? const Value.absent() : Value(receivedAt),
       sortAt: Value(sortAt),
       seq: Value(seq),
       status: Value(status),
@@ -1473,27 +1322,20 @@ class Message extends DataClass implements Insertable<Message> {
     );
   }
 
-  factory Message.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory Message.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Message(
       id: serializer.fromJson<String>(json['id']),
       conversationId: serializer.fromJson<String>(json['conversationId']),
       senderId: serializer.fromJson<String>(json['senderId']),
       receiverId: serializer.fromJson<String>(json['receiverId']),
-      type: $MessagesTable.$convertertype.fromJson(
-        serializer.fromJson<String>(json['type']),
-      ),
+      type: $MessagesTable.$convertertype.fromJson(serializer.fromJson<String>(json['type'])),
       content: serializer.fromJson<String>(json['content']),
       sentAt: serializer.fromJson<int>(json['sentAt']),
       receivedAt: serializer.fromJson<int?>(json['receivedAt']),
       sortAt: serializer.fromJson<int>(json['sortAt']),
       seq: serializer.fromJson<int>(json['seq']),
-      status: $MessagesTable.$converterstatus.fromJson(
-        serializer.fromJson<String>(json['status']),
-      ),
+      status: $MessagesTable.$converterstatus.fromJson(serializer.fromJson<String>(json['status'])),
       retryCount: serializer.fromJson<int>(json['retryCount']),
       isOutgoing: serializer.fromJson<bool>(json['isOutgoing']),
     );
@@ -1506,17 +1348,13 @@ class Message extends DataClass implements Insertable<Message> {
       'conversationId': serializer.toJson<String>(conversationId),
       'senderId': serializer.toJson<String>(senderId),
       'receiverId': serializer.toJson<String>(receiverId),
-      'type': serializer.toJson<String>(
-        $MessagesTable.$convertertype.toJson(type),
-      ),
+      'type': serializer.toJson<String>($MessagesTable.$convertertype.toJson(type)),
       'content': serializer.toJson<String>(content),
       'sentAt': serializer.toJson<int>(sentAt),
       'receivedAt': serializer.toJson<int?>(receivedAt),
       'sortAt': serializer.toJson<int>(sortAt),
       'seq': serializer.toJson<int>(seq),
-      'status': serializer.toJson<String>(
-        $MessagesTable.$converterstatus.toJson(status),
-      ),
+      'status': serializer.toJson<String>($MessagesTable.$converterstatus.toJson(status)),
       'retryCount': serializer.toJson<int>(retryCount),
       'isOutgoing': serializer.toJson<bool>(isOutgoing),
     };
@@ -1554,28 +1392,18 @@ class Message extends DataClass implements Insertable<Message> {
   Message copyWithCompanion(MessagesCompanion data) {
     return Message(
       id: data.id.present ? data.id.value : this.id,
-      conversationId: data.conversationId.present
-          ? data.conversationId.value
-          : this.conversationId,
+      conversationId: data.conversationId.present ? data.conversationId.value : this.conversationId,
       senderId: data.senderId.present ? data.senderId.value : this.senderId,
-      receiverId: data.receiverId.present
-          ? data.receiverId.value
-          : this.receiverId,
+      receiverId: data.receiverId.present ? data.receiverId.value : this.receiverId,
       type: data.type.present ? data.type.value : this.type,
       content: data.content.present ? data.content.value : this.content,
       sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
-      receivedAt: data.receivedAt.present
-          ? data.receivedAt.value
-          : this.receivedAt,
+      receivedAt: data.receivedAt.present ? data.receivedAt.value : this.receivedAt,
       sortAt: data.sortAt.present ? data.sortAt.value : this.sortAt,
       seq: data.seq.present ? data.seq.value : this.seq,
       status: data.status.present ? data.status.value : this.status,
-      retryCount: data.retryCount.present
-          ? data.retryCount.value
-          : this.retryCount,
-      isOutgoing: data.isOutgoing.present
-          ? data.isOutgoing.value
-          : this.isOutgoing,
+      retryCount: data.retryCount.present ? data.retryCount.value : this.retryCount,
+      isOutgoing: data.isOutgoing.present ? data.isOutgoing.value : this.isOutgoing,
     );
   }
 
@@ -1775,9 +1603,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
       map['receiver_id'] = Variable<String>(receiverId.value);
     }
     if (type.present) {
-      map['type'] = Variable<String>(
-        $MessagesTable.$convertertype.toSql(type.value),
-      );
+      map['type'] = Variable<String>($MessagesTable.$convertertype.toSql(type.value));
     }
     if (content.present) {
       map['content'] = Variable<String>(content.value);
@@ -1795,9 +1621,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
       map['seq'] = Variable<int>(seq.value);
     }
     if (status.present) {
-      map['status'] = Variable<String>(
-        $MessagesTable.$converterstatus.toSql(status.value),
-      );
+      map['status'] = Variable<String>($MessagesTable.$converterstatus.toSql(status.value));
     }
     if (retryCount.present) {
       map['retry_count'] = Variable<int>(retryCount.value);
@@ -1833,8 +1657,7 @@ class MessagesCompanion extends UpdateCompanion<Message> {
   }
 }
 
-class $AppSettingsTable extends AppSettings
-    with TableInfo<$AppSettingsTable, AppSetting> {
+class $AppSettingsTable extends AppSettings with TableInfo<$AppSettingsTable, AppSetting> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -1872,18 +1695,12 @@ class $AppSettingsTable extends AppSettings
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('key')) {
-      context.handle(
-        _keyMeta,
-        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
-      );
+      context.handle(_keyMeta, key.isAcceptableOrUnknown(data['key']!, _keyMeta));
     } else if (isInserting) {
       context.missing(_keyMeta);
     }
     if (data.containsKey('value')) {
-      context.handle(
-        _valueMeta,
-        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
-      );
+      context.handle(_valueMeta, value.isAcceptableOrUnknown(data['value']!, _valueMeta));
     } else if (isInserting) {
       context.missing(_valueMeta);
     }
@@ -1896,10 +1713,7 @@ class $AppSettingsTable extends AppSettings
   AppSetting map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return AppSetting(
-      key: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}key'],
-      )!,
+      key: attachedDatabase.typeMapping.read(DriftSqlType.string, data['${effectivePrefix}key'])!,
       value: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}value'],
@@ -1929,10 +1743,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
     return AppSettingsCompanion(key: Value(key), value: Value(value));
   }
 
-  factory AppSetting.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory AppSetting.fromJson(Map<String, dynamic> json, {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AppSetting(
       key: serializer.fromJson<String>(json['key']),
@@ -1971,9 +1782,7 @@ class AppSetting extends DataClass implements Insertable<AppSetting> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is AppSetting &&
-          other.key == this.key &&
-          other.value == this.value);
+      (other is AppSetting && other.key == this.key && other.value == this.value);
 }
 
 class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
@@ -2003,11 +1812,7 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
     });
   }
 
-  AppSettingsCompanion copyWith({
-    Value<String>? key,
-    Value<String>? value,
-    Value<int>? rowid,
-  }) {
+  AppSettingsCompanion copyWith({Value<String>? key, Value<String>? value, Value<int>? rowid}) {
     return AppSettingsCompanion(
       key: key ?? this.key,
       value: value ?? this.value,
@@ -2053,9 +1858,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'CREATE INDEX idx_messages_conversation_sort ON messages (conversation_id, sort_at)',
   );
   late final PeerDao peerDao = PeerDao(this as AppDatabase);
-  late final ConversationDao conversationDao = ConversationDao(
-    this as AppDatabase,
-  );
+  late final ConversationDao conversationDao = ConversationDao(this as AppDatabase);
   late final MessageDao messageDao = MessageDao(this as AppDatabase);
   late final SettingsDao settingsDao = SettingsDao(this as AppDatabase);
   @override
@@ -2094,12 +1897,12 @@ typedef $$PeersTableUpdateCompanionBuilder = PeersCompanion Function({
   Value<int> rowid,
 });
 
-final class $$PeersTableReferences
-    extends BaseReferences<_$AppDatabase, $PeersTable, Peer> {
+final class $$PeersTableReferences extends BaseReferences<_$AppDatabase, $PeersTable, Peer> {
   $$PeersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$ConversationsTable, List<Conversation>>
-  _conversationsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+  static MultiTypedResultKey<$ConversationsTable, List<Conversation>> _conversationsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
     db.conversations,
     aliasName: 'peers__id__conversations__peer_id',
   );
@@ -2111,9 +1914,7 @@ final class $$PeersTableReferences
     ).filter((f) => f.peerId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_conversationsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
+    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: cache));
   }
 }
 
@@ -2125,45 +1926,31 @@ class $$PeersTableFilterComposer extends Composer<_$AppDatabase, $PeersTable> {
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get displayName => $composableBuilder(
-    column: $table.displayName,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get displayName =>
+      $composableBuilder(column: $table.displayName, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<Uint8List> get identityPublicKey => $composableBuilder(
     column: $table.identityPublicKey,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get verified => $composableBuilder(
-    column: $table.verified,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<bool> get verified =>
+      $composableBuilder(column: $table.verified, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get platform => $composableBuilder(
-    column: $table.platform,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get platform =>
+      $composableBuilder(column: $table.platform, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get firstSeenAt => $composableBuilder(
-    column: $table.firstSeenAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get firstSeenAt =>
+      $composableBuilder(column: $table.firstSeenAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get lastSeenAt => $composableBuilder(
-    column: $table.lastSeenAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get lastSeenAt =>
+      $composableBuilder(column: $table.lastSeenAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<bool> get blocked => $composableBuilder(
-    column: $table.blocked,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<bool> get blocked =>
+      $composableBuilder(column: $table.blocked, builder: (column) => ColumnFilters(column));
 
   Expression<bool> conversationsRefs(
     Expression<bool> Function($$ConversationsTableFilterComposer f) f,
@@ -2173,26 +1960,20 @@ class $$PeersTableFilterComposer extends Composer<_$AppDatabase, $PeersTable> {
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.conversations,
       getReferencedColumn: (t) => t.peerId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ConversationsTableFilterComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$ConversationsTableFilterComposer(
             $db: $db,
             $table: $db.conversations,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return f(composer);
   }
 }
 
-class $$PeersTableOrderingComposer
-    extends Composer<_$AppDatabase, $PeersTable> {
+class $$PeersTableOrderingComposer extends Composer<_$AppDatabase, $PeersTable> {
   $$PeersTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -2200,49 +1981,34 @@ class $$PeersTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get displayName => $composableBuilder(
-    column: $table.displayName,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get displayName =>
+      $composableBuilder(column: $table.displayName, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<Uint8List> get identityPublicKey => $composableBuilder(
     column: $table.identityPublicKey,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get verified => $composableBuilder(
-    column: $table.verified,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<bool> get verified =>
+      $composableBuilder(column: $table.verified, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get platform => $composableBuilder(
-    column: $table.platform,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get platform =>
+      $composableBuilder(column: $table.platform, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get firstSeenAt => $composableBuilder(
-    column: $table.firstSeenAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get firstSeenAt =>
+      $composableBuilder(column: $table.firstSeenAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get lastSeenAt => $composableBuilder(
-    column: $table.lastSeenAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get lastSeenAt =>
+      $composableBuilder(column: $table.lastSeenAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<bool> get blocked => $composableBuilder(
-    column: $table.blocked,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<bool> get blocked =>
+      $composableBuilder(column: $table.blocked, builder: (column) => ColumnOrderings(column));
 }
 
-class $$PeersTableAnnotationComposer
-    extends Composer<_$AppDatabase, $PeersTable> {
+class $$PeersTableAnnotationComposer extends Composer<_$AppDatabase, $PeersTable> {
   $$PeersTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -2253,15 +2019,11 @@ class $$PeersTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get displayName => $composableBuilder(
-    column: $table.displayName,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get displayName =>
+      $composableBuilder(column: $table.displayName, builder: (column) => column);
 
-  GeneratedColumn<Uint8List> get identityPublicKey => $composableBuilder(
-    column: $table.identityPublicKey,
-    builder: (column) => column,
-  );
+  GeneratedColumn<Uint8List> get identityPublicKey =>
+      $composableBuilder(column: $table.identityPublicKey, builder: (column) => column);
 
   GeneratedColumn<bool> get verified =>
       $composableBuilder(column: $table.verified, builder: (column) => column);
@@ -2269,15 +2031,11 @@ class $$PeersTableAnnotationComposer
   GeneratedColumn<String> get platform =>
       $composableBuilder(column: $table.platform, builder: (column) => column);
 
-  GeneratedColumn<int> get firstSeenAt => $composableBuilder(
-    column: $table.firstSeenAt,
-    builder: (column) => column,
-  );
+  GeneratedColumn<int> get firstSeenAt =>
+      $composableBuilder(column: $table.firstSeenAt, builder: (column) => column);
 
-  GeneratedColumn<int> get lastSeenAt => $composableBuilder(
-    column: $table.lastSeenAt,
-    builder: (column) => column,
-  );
+  GeneratedColumn<int> get lastSeenAt =>
+      $composableBuilder(column: $table.lastSeenAt, builder: (column) => column);
 
   GeneratedColumn<bool> get blocked =>
       $composableBuilder(column: $table.blocked, builder: (column) => column);
@@ -2290,18 +2048,13 @@ class $$PeersTableAnnotationComposer
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.conversations,
       getReferencedColumn: (t) => t.peerId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ConversationsTableAnnotationComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$ConversationsTableAnnotationComposer(
             $db: $db,
             $table: $db.conversations,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return f(composer);
@@ -2328,12 +2081,9 @@ class $$PeersTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$PeersTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$PeersTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$PeersTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () => $$PeersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$PeersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () => $$PeersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -2380,18 +2130,14 @@ class $$PeersTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (
-                  e.readTable<$PeersTable, Peer>(table),
-                  $$PeersTableReferences(db, table, e),
-                ),
+                (e) =>
+                    (e.readTable<$PeersTable, Peer>(table), $$PeersTableReferences(db, table, e)),
               )
               .toList(),
           prefetchHooksCallback: ({conversationsRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [
-                if (conversationsRefs) db.conversations,
-              ],
+              explicitlyWatchedTables: [if (conversationsRefs) db.conversations],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
@@ -2403,13 +2149,9 @@ class $$PeersTableTableManager
                       $ConversationsTable
                     >(
                       currentTable: table,
-                      referencedTable: $$PeersTableReferences
-                          ._conversationsRefsTable(db),
-                      managerFromTypedResult: (p0) => $$PeersTableReferences(
-                        db,
-                        table,
-                        p0,
-                      ).conversationsRefs,
+                      referencedTable: $$PeersTableReferences._conversationsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$PeersTableReferences(db, table, p0).conversationsRefs,
                       currentColumn: 'id',
                       referencedColumn: 'peer_id',
                       typedResults: items,
@@ -2436,36 +2178,30 @@ typedef $$PeersTableProcessedTableManager =
       Peer,
       PrefetchHooks Function({bool conversationsRefs})
     >;
-typedef $$ConversationsTableCreateCompanionBuilder =
-    ConversationsCompanion Function({
-      required String id,
-      required String peerId,
-      Value<String?> lastMessageId,
-      Value<String?> lastMessagePreview,
-      Value<int?> lastMessageAt,
-      Value<int> unreadCount,
-      required int createdAt,
-      Value<int> rowid,
-    });
-typedef $$ConversationsTableUpdateCompanionBuilder =
-    ConversationsCompanion Function({
-      Value<String> id,
-      Value<String> peerId,
-      Value<String?> lastMessageId,
-      Value<String?> lastMessagePreview,
-      Value<int?> lastMessageAt,
-      Value<int> unreadCount,
-      Value<int> createdAt,
-      Value<int> rowid,
-    });
+typedef $$ConversationsTableCreateCompanionBuilder = ConversationsCompanion Function({
+  required String id,
+  required String peerId,
+  Value<String?> lastMessageId,
+  Value<String?> lastMessagePreview,
+  Value<int?> lastMessageAt,
+  Value<int> unreadCount,
+  required int createdAt,
+  Value<int> rowid,
+});
+typedef $$ConversationsTableUpdateCompanionBuilder = ConversationsCompanion Function({
+  Value<String> id,
+  Value<String> peerId,
+  Value<String?> lastMessageId,
+  Value<String?> lastMessagePreview,
+  Value<int?> lastMessageAt,
+  Value<int> unreadCount,
+  Value<int> createdAt,
+  Value<int> rowid,
+});
 
 final class $$ConversationsTableReferences
     extends BaseReferences<_$AppDatabase, $ConversationsTable, Conversation> {
-  $$ConversationsTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
+  $$ConversationsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $PeersTable _peerIdTable(_$AppDatabase db) =>
       db.peers.createAlias('conversations__peer_id__peers__id');
@@ -2479,17 +2215,14 @@ final class $$ConversationsTableReferences
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_peerIdTable($_db));
     if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
+    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: [item]));
   }
 
-  static MultiTypedResultKey<$MessagesTable, List<Message>> _messagesRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
-    db.messages,
-    aliasName: 'conversations__id__messages__conversation_id',
-  );
+  static MultiTypedResultKey<$MessagesTable, List<Message>> _messagesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.messages,
+        aliasName: 'conversations__id__messages__conversation_id',
+      );
 
   $$MessagesTableProcessedTableManager get messagesRefs {
     final manager = $$MessagesTableTableManager(
@@ -2498,14 +2231,11 @@ final class $$ConversationsTableReferences
     ).filter((f) => f.conversationId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_messagesRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
+    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: cache));
   }
 }
 
-class $$ConversationsTableFilterComposer
-    extends Composer<_$AppDatabase, $ConversationsTable> {
+class $$ConversationsTableFilterComposer extends Composer<_$AppDatabase, $ConversationsTable> {
   $$ConversationsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -2513,35 +2243,25 @@ class $$ConversationsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get lastMessageId => $composableBuilder(
-    column: $table.lastMessageId,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get lastMessageId =>
+      $composableBuilder(column: $table.lastMessageId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get lastMessagePreview => $composableBuilder(
     column: $table.lastMessagePreview,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get lastMessageAt => $composableBuilder(
-    column: $table.lastMessageAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get lastMessageAt =>
+      $composableBuilder(column: $table.lastMessageAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get unreadCount => $composableBuilder(
-    column: $table.unreadCount,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get unreadCount =>
+      $composableBuilder(column: $table.unreadCount, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnFilters(column));
 
   $$PeersTableFilterComposer get peerId {
     final $$PeersTableFilterComposer composer = $composerBuilder(
@@ -2549,51 +2269,38 @@ class $$ConversationsTableFilterComposer
       getCurrentColumn: (t) => t.peerId,
       referencedTable: $db.peers,
       getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$PeersTableFilterComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$PeersTableFilterComposer(
             $db: $db,
             $table: $db.peers,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
   }
 
-  Expression<bool> messagesRefs(
-    Expression<bool> Function($$MessagesTableFilterComposer f) f,
-  ) {
+  Expression<bool> messagesRefs(Expression<bool> Function($$MessagesTableFilterComposer f) f) {
     final $$MessagesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.messages,
       getReferencedColumn: (t) => t.conversationId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MessagesTableFilterComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$MessagesTableFilterComposer(
             $db: $db,
             $table: $db.messages,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return f(composer);
   }
 }
 
-class $$ConversationsTableOrderingComposer
-    extends Composer<_$AppDatabase, $ConversationsTable> {
+class $$ConversationsTableOrderingComposer extends Composer<_$AppDatabase, $ConversationsTable> {
   $$ConversationsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -2601,10 +2308,8 @@ class $$ConversationsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get lastMessageId => $composableBuilder(
     column: $table.lastMessageId,
@@ -2621,15 +2326,11 @@ class $$ConversationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get unreadCount => $composableBuilder(
-    column: $table.unreadCount,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get unreadCount =>
+      $composableBuilder(column: $table.unreadCount, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
   $$PeersTableOrderingComposer get peerId {
     final $$PeersTableOrderingComposer composer = $composerBuilder(
@@ -2637,26 +2338,20 @@ class $$ConversationsTableOrderingComposer
       getCurrentColumn: (t) => t.peerId,
       referencedTable: $db.peers,
       getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$PeersTableOrderingComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$PeersTableOrderingComposer(
             $db: $db,
             $table: $db.peers,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
   }
 }
 
-class $$ConversationsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ConversationsTable> {
+class $$ConversationsTableAnnotationComposer extends Composer<_$AppDatabase, $ConversationsTable> {
   $$ConversationsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -2667,25 +2362,17 @@ class $$ConversationsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get lastMessageId => $composableBuilder(
-    column: $table.lastMessageId,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get lastMessageId =>
+      $composableBuilder(column: $table.lastMessageId, builder: (column) => column);
 
-  GeneratedColumn<String> get lastMessagePreview => $composableBuilder(
-    column: $table.lastMessagePreview,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get lastMessagePreview =>
+      $composableBuilder(column: $table.lastMessagePreview, builder: (column) => column);
 
-  GeneratedColumn<int> get lastMessageAt => $composableBuilder(
-    column: $table.lastMessageAt,
-    builder: (column) => column,
-  );
+  GeneratedColumn<int> get lastMessageAt =>
+      $composableBuilder(column: $table.lastMessageAt, builder: (column) => column);
 
-  GeneratedColumn<int> get unreadCount => $composableBuilder(
-    column: $table.unreadCount,
-    builder: (column) => column,
-  );
+  GeneratedColumn<int> get unreadCount =>
+      $composableBuilder(column: $table.unreadCount, builder: (column) => column);
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -2696,18 +2383,13 @@ class $$ConversationsTableAnnotationComposer
       getCurrentColumn: (t) => t.peerId,
       referencedTable: $db.peers,
       getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$PeersTableAnnotationComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$PeersTableAnnotationComposer(
             $db: $db,
             $table: $db.peers,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
@@ -2721,18 +2403,13 @@ class $$ConversationsTableAnnotationComposer
       getCurrentColumn: (t) => t.id,
       referencedTable: $db.messages,
       getReferencedColumn: (t) => t.conversationId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MessagesTableAnnotationComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$MessagesTableAnnotationComposer(
             $db: $db,
             $table: $db.messages,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return f(composer);
@@ -2759,8 +2436,7 @@ class $$ConversationsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$ConversationsTableFilterComposer($db: db, $table: table),
+          createFilteringComposer: () => $$ConversationsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$ConversationsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
@@ -2837,11 +2513,8 @@ class $$ConversationsTableTableManager
                       state = state.withJoin(
                         currentTable: table,
                         currentColumn: table.peerId,
-                        referencedTable: $$ConversationsTableReferences
-                            ._peerIdTable(db),
-                        referencedColumn: $$ConversationsTableReferences
-                            ._peerIdTable(db)
-                            .id,
+                        referencedTable: $$ConversationsTableReferences._peerIdTable(db),
+                        referencedColumn: $$ConversationsTableReferences._peerIdTable(db).id,
                       ) as T;
                     }
 
@@ -2857,14 +2530,9 @@ class $$ConversationsTableTableManager
                       $MessagesTable
                     >(
                       currentTable: table,
-                      referencedTable: $$ConversationsTableReferences
-                          ._messagesRefsTable(db),
+                      referencedTable: $$ConversationsTableReferences._messagesRefsTable(db),
                       managerFromTypedResult: (p0) =>
-                          $$ConversationsTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).messagesRefs,
+                          $$ConversationsTableReferences(db, table, p0).messagesRefs,
                       currentColumn: 'id',
                       referencedColumn: 'conversation_id',
                       typedResults: items,
@@ -2928,9 +2596,8 @@ final class $$MessagesTableReferences
     extends BaseReferences<_$AppDatabase, $MessagesTable, Message> {
   $$MessagesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $ConversationsTable _conversationIdTable(_$AppDatabase db) => db
-      .conversations
-      .createAlias('messages__conversation_id__conversations__id');
+  static $ConversationsTable _conversationIdTable(_$AppDatabase db) =>
+      db.conversations.createAlias('messages__conversation_id__conversations__id');
 
   $$ConversationsTableProcessedTableManager get conversationId {
     final $_column = $_itemColumn<String>('conversation_id')!;
@@ -2941,14 +2608,11 @@ final class $$MessagesTableReferences
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_conversationIdTable($_db));
     if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
+    return ProcessedTableManager(manager.$state.copyWith(prefetchedData: [item]));
   }
 }
 
-class $$MessagesTableFilterComposer
-    extends Composer<_$AppDatabase, $MessagesTable> {
+class $$MessagesTableFilterComposer extends Composer<_$AppDatabase, $MessagesTable> {
   $$MessagesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -2956,67 +2620,46 @@ class $$MessagesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get senderId => $composableBuilder(
-    column: $table.senderId,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get senderId =>
+      $composableBuilder(column: $table.senderId, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get receiverId => $composableBuilder(
-    column: $table.receiverId,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get receiverId =>
+      $composableBuilder(column: $table.receiverId, builder: (column) => ColumnFilters(column));
 
-  ColumnWithTypeConverterFilters<MessageType, MessageType, String> get type =>
-      $composableBuilder(
-        column: $table.type,
-        builder: (column) => ColumnWithTypeConverterFilters(column),
-      );
-
-  ColumnFilters<String> get content => $composableBuilder(
-    column: $table.content,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get sentAt => $composableBuilder(
-    column: $table.sentAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get receivedAt => $composableBuilder(
-    column: $table.receivedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get sortAt => $composableBuilder(
-    column: $table.sortAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get seq => $composableBuilder(
-    column: $table.seq,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<DeliveryStatus, DeliveryStatus, String>
-  get status => $composableBuilder(
-    column: $table.status,
+  ColumnWithTypeConverterFilters<MessageType, MessageType, String> get type => $composableBuilder(
+    column: $table.type,
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
-  ColumnFilters<int> get retryCount => $composableBuilder(
-    column: $table.retryCount,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<bool> get isOutgoing => $composableBuilder(
-    column: $table.isOutgoing,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<int> get sentAt =>
+      $composableBuilder(column: $table.sentAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get receivedAt =>
+      $composableBuilder(column: $table.receivedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get sortAt =>
+      $composableBuilder(column: $table.sortAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<DeliveryStatus, DeliveryStatus, String> get status =>
+      $composableBuilder(
+        column: $table.status,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<int> get retryCount =>
+      $composableBuilder(column: $table.retryCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isOutgoing =>
+      $composableBuilder(column: $table.isOutgoing, builder: (column) => ColumnFilters(column));
 
   $$ConversationsTableFilterComposer get conversationId {
     final $$ConversationsTableFilterComposer composer = $composerBuilder(
@@ -3024,26 +2667,20 @@ class $$MessagesTableFilterComposer
       getCurrentColumn: (t) => t.conversationId,
       referencedTable: $db.conversations,
       getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ConversationsTableFilterComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$ConversationsTableFilterComposer(
             $db: $db,
             $table: $db.conversations,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
   }
 }
 
-class $$MessagesTableOrderingComposer
-    extends Composer<_$AppDatabase, $MessagesTable> {
+class $$MessagesTableOrderingComposer extends Composer<_$AppDatabase, $MessagesTable> {
   $$MessagesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -3051,65 +2688,41 @@ class $$MessagesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get senderId => $composableBuilder(
-    column: $table.senderId,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get senderId =>
+      $composableBuilder(column: $table.senderId, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get receiverId => $composableBuilder(
-    column: $table.receiverId,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get receiverId =>
+      $composableBuilder(column: $table.receiverId, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get content => $composableBuilder(
-    column: $table.content,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get sentAt => $composableBuilder(
-    column: $table.sentAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get sentAt =>
+      $composableBuilder(column: $table.sentAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get receivedAt => $composableBuilder(
-    column: $table.receivedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get receivedAt =>
+      $composableBuilder(column: $table.receivedAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get sortAt => $composableBuilder(
-    column: $table.sortAt,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get sortAt =>
+      $composableBuilder(column: $table.sortAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get seq => $composableBuilder(
-    column: $table.seq,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get status => $composableBuilder(
-    column: $table.status,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<int> get retryCount => $composableBuilder(
-    column: $table.retryCount,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<int> get retryCount =>
+      $composableBuilder(column: $table.retryCount, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<bool> get isOutgoing => $composableBuilder(
-    column: $table.isOutgoing,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<bool> get isOutgoing =>
+      $composableBuilder(column: $table.isOutgoing, builder: (column) => ColumnOrderings(column));
 
   $$ConversationsTableOrderingComposer get conversationId {
     final $$ConversationsTableOrderingComposer composer = $composerBuilder(
@@ -3117,26 +2730,20 @@ class $$MessagesTableOrderingComposer
       getCurrentColumn: (t) => t.conversationId,
       referencedTable: $db.conversations,
       getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ConversationsTableOrderingComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$ConversationsTableOrderingComposer(
             $db: $db,
             $table: $db.conversations,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
   }
 }
 
-class $$MessagesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $MessagesTable> {
+class $$MessagesTableAnnotationComposer extends Composer<_$AppDatabase, $MessagesTable> {
   $$MessagesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -3150,10 +2757,8 @@ class $$MessagesTableAnnotationComposer
   GeneratedColumn<String> get senderId =>
       $composableBuilder(column: $table.senderId, builder: (column) => column);
 
-  GeneratedColumn<String> get receiverId => $composableBuilder(
-    column: $table.receiverId,
-    builder: (column) => column,
-  );
+  GeneratedColumn<String> get receiverId =>
+      $composableBuilder(column: $table.receiverId, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<MessageType, String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
@@ -3164,10 +2769,8 @@ class $$MessagesTableAnnotationComposer
   GeneratedColumn<int> get sentAt =>
       $composableBuilder(column: $table.sentAt, builder: (column) => column);
 
-  GeneratedColumn<int> get receivedAt => $composableBuilder(
-    column: $table.receivedAt,
-    builder: (column) => column,
-  );
+  GeneratedColumn<int> get receivedAt =>
+      $composableBuilder(column: $table.receivedAt, builder: (column) => column);
 
   GeneratedColumn<int> get sortAt =>
       $composableBuilder(column: $table.sortAt, builder: (column) => column);
@@ -3178,15 +2781,11 @@ class $$MessagesTableAnnotationComposer
   GeneratedColumnWithTypeConverter<DeliveryStatus, String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
-  GeneratedColumn<int> get retryCount => $composableBuilder(
-    column: $table.retryCount,
-    builder: (column) => column,
-  );
+  GeneratedColumn<int> get retryCount =>
+      $composableBuilder(column: $table.retryCount, builder: (column) => column);
 
-  GeneratedColumn<bool> get isOutgoing => $composableBuilder(
-    column: $table.isOutgoing,
-    builder: (column) => column,
-  );
+  GeneratedColumn<bool> get isOutgoing =>
+      $composableBuilder(column: $table.isOutgoing, builder: (column) => column);
 
   $$ConversationsTableAnnotationComposer get conversationId {
     final $$ConversationsTableAnnotationComposer composer = $composerBuilder(
@@ -3194,18 +2793,13 @@ class $$MessagesTableAnnotationComposer
       getCurrentColumn: (t) => t.conversationId,
       referencedTable: $db.conversations,
       getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ConversationsTableAnnotationComposer(
+      builder: (joinBuilder, {$addJoinBuilderToRootComposer, $removeJoinBuilderFromRootComposer}) =>
+          $$ConversationsTableAnnotationComposer(
             $db: $db,
             $table: $db.conversations,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
+            $removeJoinBuilderFromRootComposer: $removeJoinBuilderFromRootComposer,
           ),
     );
     return composer;
@@ -3232,10 +2826,8 @@ class $$MessagesTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$MessagesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$MessagesTableOrderingComposer($db: db, $table: table),
+          createFilteringComposer: () => $$MessagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$MessagesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$MessagesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
@@ -3334,11 +2926,8 @@ class $$MessagesTableTableManager
                       state = state.withJoin(
                         currentTable: table,
                         currentColumn: table.conversationId,
-                        referencedTable: $$MessagesTableReferences
-                            ._conversationIdTable(db),
-                        referencedColumn: $$MessagesTableReferences
-                            ._conversationIdTable(db)
-                            .id,
+                        referencedTable: $$MessagesTableReferences._conversationIdTable(db),
+                        referencedColumn: $$MessagesTableReferences._conversationIdTable(db).id,
                       ) as T;
                     }
 
@@ -3367,21 +2956,18 @@ typedef $$MessagesTableProcessedTableManager =
       Message,
       PrefetchHooks Function({bool conversationId})
     >;
-typedef $$AppSettingsTableCreateCompanionBuilder =
-    AppSettingsCompanion Function({
-      required String key,
-      required String value,
-      Value<int> rowid,
-    });
-typedef $$AppSettingsTableUpdateCompanionBuilder =
-    AppSettingsCompanion Function({
-      Value<String> key,
-      Value<String> value,
-      Value<int> rowid,
-    });
+typedef $$AppSettingsTableCreateCompanionBuilder = AppSettingsCompanion Function({
+  required String key,
+  required String value,
+  Value<int> rowid,
+});
+typedef $$AppSettingsTableUpdateCompanionBuilder = AppSettingsCompanion Function({
+  Value<String> key,
+  Value<String> value,
+  Value<int> rowid,
+});
 
-class $$AppSettingsTableFilterComposer
-    extends Composer<_$AppDatabase, $AppSettingsTable> {
+class $$AppSettingsTableFilterComposer extends Composer<_$AppDatabase, $AppSettingsTable> {
   $$AppSettingsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -3389,19 +2975,14 @@ class $$AppSettingsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnFilters(column),
-  );
+  ColumnFilters<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => ColumnFilters(column));
 }
 
-class $$AppSettingsTableOrderingComposer
-    extends Composer<_$AppDatabase, $AppSettingsTable> {
+class $$AppSettingsTableOrderingComposer extends Composer<_$AppDatabase, $AppSettingsTable> {
   $$AppSettingsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -3409,19 +2990,14 @@ class $$AppSettingsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<String> get key => $composableBuilder(
-    column: $table.key,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get value => $composableBuilder(
-    column: $table.value,
-    builder: (column) => ColumnOrderings(column),
-  );
+  ColumnOrderings<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => ColumnOrderings(column));
 }
 
-class $$AppSettingsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $AppSettingsTable> {
+class $$AppSettingsTableAnnotationComposer extends Composer<_$AppDatabase, $AppSettingsTable> {
   $$AppSettingsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -3447,10 +3023,7 @@ class $$AppSettingsTableTableManager
           $$AppSettingsTableAnnotationComposer,
           $$AppSettingsTableCreateCompanionBuilder,
           $$AppSettingsTableUpdateCompanionBuilder,
-          (
-            AppSetting,
-            BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting>,
-          ),
+          (AppSetting, BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting>),
           AppSetting,
           PrefetchHooks Function()
         > {
@@ -3459,10 +3032,8 @@ class $$AppSettingsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer: () =>
-              $$AppSettingsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$AppSettingsTableOrderingComposer($db: db, $table: table),
+          createFilteringComposer: () => $$AppSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () => $$AppSettingsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$AppSettingsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
@@ -3470,25 +3041,16 @@ class $$AppSettingsTableTableManager
             Value<String> value = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) => AppSettingsCompanion(key: key, value: value, rowid: rowid),
-          createCompanionCallback:
-              ({
-                required String key,
-                required String value,
-                Value<int> rowid = const Value.absent(),
-              }) => AppSettingsCompanion.insert(
-                key: key,
-                value: value,
-                rowid: rowid,
-              ),
+          createCompanionCallback: ({
+            required String key,
+            required String value,
+            Value<int> rowid = const Value.absent(),
+          }) => AppSettingsCompanion.insert(key: key, value: value, rowid: rowid),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
                   e.readTable<$AppSettingsTable, AppSetting>(table),
-                  BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting>(
-                    db,
-                    table,
-                    e,
-                  ),
+                  BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting>(db, table, e),
                 ),
               )
               .toList(),
@@ -3507,10 +3069,7 @@ typedef $$AppSettingsTableProcessedTableManager =
       $$AppSettingsTableAnnotationComposer,
       $$AppSettingsTableCreateCompanionBuilder,
       $$AppSettingsTableUpdateCompanionBuilder,
-      (
-        AppSetting,
-        BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting>,
-      ),
+      (AppSetting, BaseReferences<_$AppDatabase, $AppSettingsTable, AppSetting>),
       AppSetting,
       PrefetchHooks Function()
     >;
@@ -3518,12 +3077,10 @@ typedef $$AppSettingsTableProcessedTableManager =
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$PeersTableTableManager get peers =>
-      $$PeersTableTableManager(_db, _db.peers);
+  $$PeersTableTableManager get peers => $$PeersTableTableManager(_db, _db.peers);
   $$ConversationsTableTableManager get conversations =>
       $$ConversationsTableTableManager(_db, _db.conversations);
-  $$MessagesTableTableManager get messages =>
-      $$MessagesTableTableManager(_db, _db.messages);
+  $$MessagesTableTableManager get messages => $$MessagesTableTableManager(_db, _db.messages);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
 }

@@ -31,8 +31,8 @@ class NearbyController extends GetxController {
   void onInit() {
     super.onInit();
     _knownSub = _conversations.watchConversations().listen(
-          (items) => _knownPeerIds.assignAll(items.map((c) => c.peer.id)),
-        );
+      (items) => _knownPeerIds.assignAll(items.map((c) => c.peer.id)),
+    );
   }
 
   @override

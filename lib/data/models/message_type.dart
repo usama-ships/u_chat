@@ -1,3 +1,7 @@
-/// Kind of message payload. Only [text] exists in the MVP; the enum keeps the
-/// protocol and schema extensible without migrations of existing rows.
-enum MessageType { text }
+/// Kind of message payload. Stored by name, so adding a kind needs no migration.
+enum MessageType {
+  text,
+
+  /// `content` holds a `VoiceMeta`; the audio lives in a file.
+  voice,
+}

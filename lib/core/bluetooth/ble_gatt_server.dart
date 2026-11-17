@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'ble_constants.dart';
 import 'link/ble_link.dart';
 
-/// Hosts the U Chat GATT service (peripheral role) and turns remote centrals
+/// Hosts the Blue Chat GATT service (peripheral role) and turns remote centrals
 /// into [PeripheralLink]s.
 ///
 /// A link is created when a central subscribes to TX or writes to RX, NOT

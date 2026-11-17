@@ -4,12 +4,12 @@ import 'package:get/get.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_motion.dart';
 import '../../../app/widgets/buttons.dart';
-import '../../../app/widgets/glass.dart';
+import '../../../app/widgets/surfaces.dart';
 import '../../../app/widgets/motion.dart';
 import '../../../app/widgets/overlays.dart';
 import '../../../app/widgets/peer_avatar.dart';
 import '../../../app/widgets/responsive.dart';
-import '../../../app/widgets/silver_backdrop.dart';
+import '../../../app/widgets/app_scaffold.dart';
 import '../../../app/widgets/status_view.dart';
 import '../../../core/utils/time_format.dart';
 import '../controllers/contact_controller.dart';
@@ -21,9 +21,9 @@ class ContactView extends GetView<ContactController> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final gutter = Responsive.gutter(context);
-    return GlassScaffold(
-      appBar: GlassBar.text('Contact'),
-      // Builder: the clearance for the glass bar only exists below the Scaffold.
+    return AppScaffold(
+      appBar: TopBar.text('Contact'),
+      // Builder: the clearance for the top bar only exists below the Scaffold.
       body: Builder(
         builder: (context) => Obx(() {
           final inset = MediaQuery.paddingOf(context);
@@ -75,7 +75,7 @@ class ContactView extends GetView<ContactController> {
                               padding: EdgeInsets.only(left: 6),
                               child: Icon(
                                 Icons.verified_rounded,
-                                color: AppColors.bronze400,
+                                color: AppColors.accentLight,
                                 semanticLabel: 'Verified',
                               ),
                             )
@@ -95,7 +95,7 @@ class ContactView extends GetView<ContactController> {
                       status,
                       key: ValueKey(status),
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: connected ? AppColors.bronze300 : AppColors.silver300,
+                        color: connected ? AppColors.success : AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -111,13 +111,13 @@ class ContactView extends GetView<ContactController> {
                     child: peer.blocked
                         ? const SizedBox.shrink()
                         : connected
-                        ? GhostButton(
+                        ? SecondaryButton(
                             key: const ValueKey('disconnect'),
                             label: 'Disconnect',
                             icon: Icons.bluetooth_disabled_rounded,
                             onPressed: controller.disconnect,
                           )
-                        : ChromeButton(
+                        : PrimaryButton(
                             key: const ValueKey('connect'),
                             label: 'Connect',
                             icon: Icons.bluetooth_rounded,
@@ -129,7 +129,7 @@ class ContactView extends GetView<ContactController> {
               const SizedBox(height: 28),
               Entrance(
                 delay: const Duration(milliseconds: 160),
-                child: GlassSection(
+                child: Section(
                   title: 'Safety number',
                   children: [
                     Padding(
@@ -138,7 +138,7 @@ class ContactView extends GetView<ContactController> {
                           ? Text(
                               'Available after the first secure connection with this contact.',
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                color: AppColors.silver300,
+                                color: AppColors.textSecondary,
                               ),
                             )
                           : Column(
@@ -156,7 +156,7 @@ class ContactView extends GetView<ContactController> {
                             ),
                     ),
                     if (safety != null)
-                      GlassSwitchTile(
+                      SwitchRow(
                         icon: Icons.verified_outlined,
                         title: 'Verified',
                         subtitle: 'I compared the safety numbers and they match',
@@ -169,10 +169,10 @@ class ContactView extends GetView<ContactController> {
               const SizedBox(height: 24),
               Entrance(
                 delay: const Duration(milliseconds: 220),
-                child: GlassSection(
+                child: Section(
                   title: 'Device',
                   children: [
-                    GlassTile(
+                    ListRow(
                       icon: Icons.fingerprint_rounded,
                       title: 'Device ID',
                       subtitleWidget: SelectableText(
@@ -186,21 +186,21 @@ class ContactView extends GetView<ContactController> {
               const SizedBox(height: 24),
               Entrance(
                 delay: const Duration(milliseconds: 280),
-                child: GlassSection(
+                child: Section(
                   title: 'Privacy',
                   children: [
-                    GlassSwitchTile(
+                    SwitchRow(
                       icon: Icons.block_rounded,
                       title: 'Block contact',
                       subtitle: 'Blocked contacts cannot connect or send you messages',
                       value: peer.blocked,
                       onChanged: controller.setBlocked,
                     ),
-                    GlassTile(
+                    ListRow(
                       icon: Icons.delete_outline_rounded,
-                      iconColor: AppColors.clay,
+                      iconColor: AppColors.danger,
                       title: 'Delete conversation',
-                      titleColor: AppColors.clay,
+                      titleColor: AppColors.danger,
                       subtitle: 'Removes all messages with this contact from this phone',
                       onTap: () => _confirmDelete(context, peer.displayName),
                     ),
@@ -215,7 +215,7 @@ class ContactView extends GetView<ContactController> {
   }
 
   Future<void> _confirmDelete(BuildContext context, String name) async {
-    final confirmed = await showGlassConfirm(
+    final confirmed = await showConfirm(
       context,
       title: 'Delete conversation?',
       message: 'All messages with $name will be removed from this phone. This cannot be undone.',
@@ -256,9 +256,8 @@ class _SafetyGrid extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color: AppColors.glassTop,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,

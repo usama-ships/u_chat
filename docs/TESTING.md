@@ -1,4 +1,4 @@
-# U Chat — Device Test Checklist
+# Blue Chat — Device Test Checklist
 
 Automated tests (`flutter test`) cover the protocol, cryptography, database and
 delivery logic with simulated phones. This checklist covers what only real
@@ -14,13 +14,13 @@ the lines starting with `PeerSession … closed:`.
 | 1.2 | Deny permission | "Permission needed" screen with **Allow** |
 | 1.3 | Deny twice, then tap the button | Button says **Open app settings** and opens them |
 | 1.4 | Bluetooth off, open Nearby | "Bluetooth is off". Turning it on starts scanning automatically |
-| 1.5 | Settings → Bluetooth | Status "Ready", Visibility "Visible to nearby U Chat users…" |
+| 1.5 | Settings → Bluetooth | Status "Ready", Visibility "Visible to nearby Blue Chat users…" |
 
 ## 2. Discovery
 | # | Step | Expected |
 |---|---|---|
 | 2.1 | Open Nearby on both phones | Each lists the other within ~5 s, with name and signal |
-| 2.2 | Close U Chat on B | B disappears from A's list within ~12 s |
+| 2.2 | Close Blue Chat on B | B disappears from A's list within ~12 s |
 | 2.3 | Change B's name in Settings | A shows the new name (first 13 bytes) |
 | 2.4 | Leave Nearby open for 2+ minutes | Scanning stops; **Scan again** appears |
 
@@ -75,3 +75,16 @@ the lines starting with `PeerSession … closed:`.
 |---|---|---|
 | 8.1 | Home button on B for 1 minute | B stops advertising (expected). Existing connection may survive briefly |
 | 8.2 | Return to B | Advertising resumes; reconnects if needed |
+
+## 9. Voice messages
+
+Needs two phones, on the same version of the app.
+
+1. Hold the mic, speak for a few seconds, release. The note appears at once with a progress ring.
+2. Time a 1-minute note from release to the double tick, and note the result. This is the real transfer speed.
+3. Play it on the other phone. Try 1.5× and 2×, and drag along the trace to seek.
+4. Slide left while holding: nothing is sent. Slide up: recording continues without a finger, and the delete and send buttons both work.
+5. Send a long note and, during the transfer, send a text. The text should arrive before the note finishes.
+6. Walk out of range during a transfer, then come back. It should continue from where it stopped, not restart.
+7. Deny the microphone when asked: a clear message appears and nothing records.
+8. Delete the conversation: the audio goes too.

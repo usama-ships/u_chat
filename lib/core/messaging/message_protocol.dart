@@ -24,9 +24,12 @@ class ChatMessagePayload {
   });
 
   static const version = 1;
-  static final _uuidPattern =
-      RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$');
+  static final _uuidPattern = RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+  );
   static final _deviceIdPattern = RegExp(r'^[a-z2-7]{26}$');
+
+  static bool isValidId(String id) => _uuidPattern.hasMatch(id);
 
   final String id;
   final String senderId;
@@ -36,7 +39,9 @@ class ChatMessagePayload {
   final int timestamp;
   final int seq;
 
-  Uint8List encode() => Uint8List.fromList(utf8.encode(jsonEncode({
+  Uint8List encode() => Uint8List.fromList(
+    utf8.encode(
+      jsonEncode({
         'v': version,
         'id': id,
         'senderId': senderId,
@@ -45,7 +50,9 @@ class ChatMessagePayload {
         'content': content,
         'timestamp': timestamp,
         'seq': seq,
-      })));
+      }),
+    ),
+  );
 
   /// Decodes and validates. Throws [FormatException] for anything malformed.
   static ChatMessagePayload decode(Uint8List body) {
@@ -69,7 +76,8 @@ class ChatMessagePayload {
     }
     final type = MessageType.values.where((t) => t.name == typeName).firstOrNull;
     if (type == null) throw const FormatException('unknown message type');
-    if (content is! String || content.trim().isEmpty ||
+    if (content is! String ||
+        content.trim().isEmpty ||
         content.length > AppConstants.maxTextLength) {
       throw const FormatException('bad content');
     }

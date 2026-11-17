@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'ble_constants.dart';
 
-/// Data a U Chat device puts in its BLE advertisement.
+/// Data a Blue Chat device puts in its BLE advertisement.
 ///
 /// Layout (manufacturer data, ≤ 24 bytes):
 /// ```
@@ -35,7 +35,7 @@ class AdvertisementPayload {
     ]);
   }
 
-  /// Returns null for anything that isn't a valid U Chat advertisement.
+  /// Returns null for anything that isn't a valid Blue Chat advertisement.
   static AdvertisementPayload? tryDecode(List<int> data) {
     const headerLength = 3 + BleConstants.advertisedIdLength;
     if (data.length < headerLength || data.length > BleConstants.maxAdvertisementPayload) {

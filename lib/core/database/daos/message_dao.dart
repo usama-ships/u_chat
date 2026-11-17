@@ -16,10 +16,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
   Stream<List<Message>> watchForConversation(String conversationId) {
     return (select(messages)
           ..where((m) => m.conversationId.equals(conversationId))
-          ..orderBy([
-            (m) => OrderingTerm.asc(m.sortAt),
-            (m) => OrderingTerm.asc(m.seq),
-          ]))
+          ..orderBy([(m) => OrderingTerm.asc(m.sortAt), (m) => OrderingTerm.asc(m.seq)]))
         .watch();
   }
 
@@ -28,10 +25,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
   Stream<List<Message>> watchRecent(String conversationId, {required int limit}) {
     return (select(messages)
           ..where((m) => m.conversationId.equals(conversationId))
-          ..orderBy([
-            (m) => OrderingTerm.desc(m.sortAt),
-            (m) => OrderingTerm.desc(m.seq),
-          ])
+          ..orderBy([(m) => OrderingTerm.desc(m.sortAt), (m) => OrderingTerm.desc(m.seq)])
           ..limit(limit))
         .watch()
         .map((rows) => rows.reversed.toList(growable: false));
@@ -52,6 +46,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     required MessageType type,
     required String content,
     required int now,
+    String? preview,
   }) {
     return transaction(() async {
       final maxSeq = messages.seq.max();
@@ -77,7 +72,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
       await _applyToSummary(
         conversationId: conversationId,
         messageId: id,
-        preview: content,
+        preview: preview ?? content,
         at: now,
         incrementUnread: false,
       );
@@ -98,6 +93,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     required int seq,
     required int now,
     required bool incrementUnread,
+    String? preview,
   }) {
     return transaction(() async {
       if (await findById(id) != null) return false;
@@ -120,7 +116,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
       await _applyToSummary(
         conversationId: conversationId,
         messageId: id,
-        preview: content,
+        preview: preview ?? content,
         at: now,
         incrementUnread: incrementUnread,
       );
@@ -150,10 +146,12 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
   /// (pending, interrupted while sending, or sent without ACK), by `seq`.
   Future<Message?> nextUndeliveredOutgoing(String conversationId) {
     return (select(messages)
-          ..where((m) =>
-              m.conversationId.equals(conversationId) &
-              m.isOutgoing.equals(true) &
-              m.status.isInValues(_undelivered))
+          ..where(
+            (m) =>
+                m.conversationId.equals(conversationId) &
+                m.isOutgoing.equals(true) &
+                m.status.isInValues(_undelivered),
+          )
           ..orderBy([(m) => OrderingTerm.asc(m.seq)])
           ..limit(1))
         .getSingleOrNull();
@@ -173,14 +171,48 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
   /// Marks an outgoing message delivered, only if it was really sent to
   /// [peerId] (a peer can't acknowledge someone else's messages).
   Future<bool> markDelivered(String id, String peerId) async {
-    final changed = await (update(messages)
-          ..where((m) =>
-              m.id.equals(id) &
-              m.isOutgoing.equals(true) &
-              m.receiverId.equals(peerId) &
-              m.status.isInValues([..._undelivered, DeliveryStatus.failed])))
-        .write(const MessagesCompanion(status: Value(DeliveryStatus.delivered)));
+    final changed =
+        await (update(messages)..where(
+              (m) =>
+                  m.id.equals(id) &
+                  m.isOutgoing.equals(true) &
+                  m.receiverId.equals(peerId) &
+                  m.status.isInValues([
+                    ..._undelivered,
+                    DeliveryStatus.transferring,
+                    DeliveryStatus.failed,
+                  ]),
+            ))
+            .write(const MessagesCompanion(status: Value(DeliveryStatus.delivered)));
     return changed > 0;
+  }
+
+  /// The peer stored a voice message and will now fetch its audio. Only moves
+  /// forward: a repeated ACK can't undo `delivered`.
+  Future<bool> markTransferring(String id, String peerId) async {
+    final changed =
+        await (update(messages)..where(
+              (m) =>
+                  m.id.equals(id) &
+                  m.isOutgoing.equals(true) &
+                  m.receiverId.equals(peerId) &
+                  m.status.isInValues([..._undelivered, DeliveryStatus.failed]),
+            ))
+            .write(const MessagesCompanion(status: Value(DeliveryStatus.transferring)));
+    return changed > 0;
+  }
+
+  /// Voice messages received from [peerId], oldest first.
+  Future<List<Message>> incomingVoiceFrom(String peerId) {
+    return (select(messages)
+          ..where(
+            (m) =>
+                m.senderId.equals(peerId) &
+                m.isOutgoing.equals(false) &
+                m.type.equalsValue(MessageType.voice),
+          )
+          ..orderBy([(m) => OrderingTerm.asc(m.sortAt)]))
+        .get();
   }
 
   /// Records a missing ACK. Returns the new status: `pending` (will be resent)
@@ -204,12 +236,12 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
 
   /// User asked to retry a failed message.
   Future<bool> retryFailed(String id) async {
-    final changed = await (update(messages)
-          ..where((m) => m.id.equals(id) & m.status.equalsValue(DeliveryStatus.failed)))
-        .write(const MessagesCompanion(
-          status: Value(DeliveryStatus.pending),
-          retryCount: Value(0),
-        ));
+    final changed =
+        await (update(
+          messages,
+        )..where((m) => m.id.equals(id) & m.status.equalsValue(DeliveryStatus.failed))).write(
+          const MessagesCompanion(status: Value(DeliveryStatus.pending), retryCount: Value(0)),
+        );
     return changed > 0;
   }
 
@@ -220,8 +252,9 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
     required int at,
     required bool incrementUnread,
   }) async {
-    final conversation =
-        await (select(conversations)..where((c) => c.id.equals(conversationId))).getSingle();
+    final conversation = await (select(
+      conversations,
+    )..where((c) => c.id.equals(conversationId))).getSingle();
     final isNewest = conversation.lastMessageAt == null || at >= conversation.lastMessageAt!;
     if (!isNewest && !incrementUnread) return;
 
@@ -230,8 +263,7 @@ class MessageDao extends DatabaseAccessor<AppDatabase> with _$MessageDaoMixin {
         lastMessageId: isNewest ? Value(messageId) : const Value.absent(),
         lastMessagePreview: isNewest ? Value(_preview(preview)) : const Value.absent(),
         lastMessageAt: isNewest ? Value(at) : const Value.absent(),
-        unreadCount:
-            incrementUnread ? Value(conversation.unreadCount + 1) : const Value.absent(),
+        unreadCount: incrementUnread ? Value(conversation.unreadCount + 1) : const Value.absent(),
       ),
     );
   }

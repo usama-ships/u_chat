@@ -5,13 +5,14 @@ import 'package:get/get.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_motion.dart';
+import '../../../app/widgets/app_scaffold.dart';
 import '../../../app/widgets/buttons.dart';
-import '../../../app/widgets/glass.dart';
 import '../../../app/widgets/motion.dart';
+import '../../../app/widgets/peer_avatar.dart';
 import '../../../app/widgets/radar.dart';
 import '../../../app/widgets/responsive.dart';
-import '../../../app/widgets/silver_backdrop.dart';
 import '../../../app/widgets/status_view.dart';
+import '../../../app/widgets/surfaces.dart';
 import '../../../core/bluetooth/models/ble_availability.dart';
 import '../controllers/nearby_controller.dart';
 import '../widgets/device_tile.dart';
@@ -21,51 +22,60 @@ class NearbyView extends GetView<NearbyController> {
 
   @override
   Widget build(BuildContext context) {
-    return GlassScaffold(
-      appBar: GlassBar.text(
+    final bt = controller.bluetooth;
+    return AppScaffold(
+      appBar: TopBar.text(
         'Nearby',
-        bottom: Obx(() => AnimatedOpacity(
+        actions: [
+          Obx(() {
+            final show = bt.availability.value == BleAvailability.ready && !bt.isScanning.value;
+            return AnimatedScale(
               duration: Motion.medium,
-              opacity: controller.bluetooth.isScanning.value ? 1 : 0,
-              child: const LinearProgressIndicator(
-                minHeight: 2,
-                color: AppColors.bronze400,
-                backgroundColor: Colors.transparent,
+              curve: Motion.pop,
+              scale: show ? 1 : 0,
+              child: RoundIconButton(
+                icon: Icons.refresh_rounded,
+                tooltip: 'Scan again',
+                onPressed: show ? controller.rescan : null,
               ),
-            )),
+            );
+          }),
+        ],
       ),
       body: Obx(() {
         final Widget content = switch (controller.availability) {
           BleAvailability.unknown => const Center(
-              key: ValueKey('unknown'),
-              child: BusySpinner(size: 26),
-            ),
+            key: ValueKey('unknown'),
+            child: BusySpinner(size: 26),
+          ),
           BleAvailability.unsupported => const StatusView(
-              key: ValueKey('unsupported'),
-              icon: Icons.bluetooth_disabled_rounded,
-              title: 'Bluetooth Low Energy not supported',
-              body: 'This phone has no Bluetooth Low Energy, which U Chat needs.',
-            ),
+            key: ValueKey('unsupported'),
+            icon: Icons.bluetooth_disabled_rounded,
+            title: 'Bluetooth Low Energy not supported',
+            body: 'This phone has no Bluetooth Low Energy, which Blue Chat needs.',
+          ),
           BleAvailability.poweredOff => const StatusView(
-              key: ValueKey('off'),
-              icon: Icons.bluetooth_disabled_rounded,
-              title: 'Bluetooth is off',
-              body: 'Turn on Bluetooth from the quick settings panel. '
-                  'Scanning starts automatically.',
-            ),
+            key: ValueKey('off'),
+            icon: Icons.bluetooth_disabled_rounded,
+            title: 'Bluetooth is off',
+            body:
+                'Turn on Bluetooth from the quick settings panel. '
+                'Scanning starts automatically.',
+          ),
           BleAvailability.unauthorized => StatusView(
-              key: const ValueKey('unauthorized'),
-              icon: Icons.lock_outline_rounded,
-              title: 'Permission needed',
-              body: 'U Chat needs the "Nearby devices" permission to find and talk to '
-                  'phones around you. It never uses your location.',
-              action: Obx(() => ChromeButton(
-                    label: controller.bluetooth.permissionDenied.value
-                        ? 'Open app settings'
-                        : 'Allow',
-                    onPressed: controller.grantPermission,
-                  )),
+            key: const ValueKey('unauthorized'),
+            icon: Icons.lock_outline_rounded,
+            title: 'Permission needed',
+            body:
+                'Blue Chat needs the "Nearby devices" permission to find and talk to '
+                'phones around you. It never uses your location.',
+            action: Obx(
+              () => PrimaryButton(
+                label: bt.permissionDenied.value ? 'Open app settings' : 'Allow',
+                onPressed: controller.grantPermission,
+              ),
             ),
+          ),
           BleAvailability.ready => const _ReadyBody(key: ValueKey('ready')),
         };
         return AnimatedSwitcher(duration: Motion.medium, child: content);
@@ -83,8 +93,7 @@ class _ReadyBody extends GetView<NearbyController> {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Wide screens and landscape: radar beside the list.
-        final sideBySide = constraints.maxWidth >= 720;
-        if (sideBySide) {
+        if (constraints.maxWidth >= 720) {
           return Padding(
             padding: EdgeInsets.only(top: inset.top),
             child: Row(
@@ -92,13 +101,13 @@ class _ReadyBody extends GetView<NearbyController> {
                 Expanded(
                   flex: 2,
                   child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
                       child: _RadarHeader(
-                        // Leaves room for the caption under the radar.
+                        // Leaves room for the status bar under the radar.
                         size: math.min(
-                          constraints.maxWidth * 0.32,
-                          constraints.maxHeight - inset.top - inset.bottom - 76,
+                          constraints.maxWidth * 0.30,
+                          constraints.maxHeight - inset.top - inset.bottom - 110,
                         ),
                       ),
                     ),
@@ -111,16 +120,15 @@ class _ReadyBody extends GetView<NearbyController> {
         }
         final height = constraints.maxHeight - inset.top;
         return Obx(() {
-          final hasDevices = controller.devices.isNotEmpty;
-          final fraction = hasDevices ? 0.30 : 0.40;
+          final fraction = controller.devices.isNotEmpty ? 0.28 : 0.36;
           return Padding(
             padding: EdgeInsets.only(top: inset.top),
             child: Column(
               children: [
-                const SizedBox(height: 18),
-                _RadarHeader(size: math.min(height * fraction, constraints.maxWidth * 0.72)),
-                const SizedBox(height: 6),
-                const Expanded(child: _DeviceArea(topPadding: 10)),
+                const SizedBox(height: 22),
+                _RadarHeader(size: math.min(height * fraction, constraints.maxWidth * 0.68)),
+                const SizedBox(height: 4),
+                const Expanded(child: _DeviceArea(topPadding: 12)),
               ],
             ),
           );
@@ -137,7 +145,6 @@ class _RadarHeader extends GetView<NearbyController> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final bt = controller.bluetooth;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -145,38 +152,105 @@ class _RadarHeader extends GetView<NearbyController> {
         AnimatedContainer(
           duration: Motion.slow,
           curve: Motion.ease,
-          width: size,
-          height: size,
-          child: Obx(() => Radar(
-                scanning: bt.isScanning.value,
-                blips: [
-                  for (final device in controller.devices)
-                    RadarBlip(id: device.deviceIdPrefix, strength: radarStrength(device.rssi)),
-                ],
-              )),
-        ),
-        const SizedBox(height: 12),
-        Obx(() {
-          final count = controller.devices.length;
-          final label = count > 0
-              ? (count == 1 ? '1 person nearby' : '$count people nearby')
-              : bt.isScanning.value
-                  ? 'Scanning…'
-                  : 'Scan stopped';
-          return AnimatedSwitcher(
-            duration: Motion.medium,
-            transitionBuilder: fadeLiftTransition,
-            child: Text(
-              label,
-              key: ValueKey(label),
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: count > 0 ? AppColors.bronze300 : AppColors.silver200,
-              ),
+          width: math.max(size, 120),
+          height: math.max(size, 120),
+          child: Obx(
+            () => Radar(
+              scanning: bt.isScanning.value,
+              blips: [
+                for (final device in controller.devices)
+                  RadarBlip(
+                    id: device.deviceIdPrefix,
+                    strength: radarStrength(device.rssi),
+                    label: device.displayName.isEmpty
+                        ? '?'
+                        : device.displayName.characters.first.toUpperCase(),
+                    colors: PeerAvatar.colorsFor(device.deviceIdPrefix),
+                  ),
+              ],
             ),
-          );
-        }),
+          ),
+        ),
+        const SizedBox(height: 18),
+        const _StatusBar(),
       ],
     );
+  }
+}
+
+/// What the scan is doing, and whether other phones can see this one.
+class _StatusBar extends GetView<NearbyController> {
+  const _StatusBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bt = controller.bluetooth;
+    return Obx(() {
+      final count = controller.devices.length;
+      final scanning = bt.isScanning.value;
+      final label = count > 0
+          ? (count == 1 ? '1 person found' : '$count people found')
+          : scanning
+          ? 'Searching…'
+          : 'Search paused';
+      final visible = bt.isAdvertising.value;
+      return Panel(
+        radius: 100,
+        padding: const EdgeInsets.fromLTRB(8, 6, 6, 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            PulseDot(active: scanning, color: AppColors.accentLight, size: 7),
+            AnimatedSwitcher(
+              duration: Motion.medium,
+              transitionBuilder: fadeLiftTransition,
+              child: Text(
+                label,
+                key: ValueKey(label),
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: count > 0 ? AppColors.text : AppColors.textSecondary,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Tooltip(
+              message: visible
+                  ? 'Other Blue Chat users nearby can find you'
+                  : 'Other phones cannot find you right now',
+              child: AnimatedContainer(
+                duration: Motion.medium,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(100),
+                  color: (visible ? AppColors.success : AppColors.textFaint).withValues(
+                    alpha: 0.16,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      visible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+                      size: 14,
+                      color: visible ? AppColors.success : AppColors.textMuted,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      visible ? 'Visible' : 'Hidden',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: visible ? AppColors.success : AppColors.textMuted,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -201,14 +275,12 @@ class _DeviceAreaState extends State<_DeviceArea> {
         Obx(() {
           final String? notice = !bt.advertisingSupported.value
               ? "This phone can't advertise over Bluetooth. You can find others, "
-                  "but they can't find you."
+                    "but they can't find you."
               : bt.advertisingError.value;
           return AnimatedSize(
             duration: Motion.medium,
             curve: Motion.ease,
-            child: notice == null
-                ? const SizedBox(width: double.infinity)
-                : _Notice(text: notice),
+            child: notice == null ? const SizedBox(width: double.infinity) : _Notice(text: notice),
           );
         }),
         Expanded(
@@ -218,25 +290,28 @@ class _DeviceAreaState extends State<_DeviceArea> {
             final Widget content;
             if (devices.isEmpty) {
               if (scanError != null) {
-                content = _Hint(
+                content = _Tips(
                   key: const ValueKey('error'),
-                  title: 'Scan failed',
-                  body: scanError,
-                  action: ChromeButton(label: 'Try again', onPressed: controller.rescan),
+                  title: 'Search failed',
+                  subtitle: scanError,
+                  action: PrimaryButton(label: 'Try again', onPressed: controller.rescan),
                 );
               } else if (bt.isScanning.value) {
-                content = const _Hint(
+                content = const _Tips(
                   key: ValueKey('scanning'),
-                  title: 'Looking for nearby U Chat users',
-                  body: 'Make sure U Chat is open on the other phone, with Bluetooth on. '
-                      'On Android 11 or older, Location must also be switched on.',
+                  title: 'Looking for people nearby',
+                  subtitle: 'This usually takes a few seconds. For them to show up:',
                 );
               } else {
-                content = _Hint(
+                content = _Tips(
                   key: const ValueKey('stopped'),
-                  title: 'No devices found',
-                  body: 'Scanning stopped to save battery.',
-                  action: ChromeButton(label: 'Scan again', onPressed: controller.rescan),
+                  title: 'Nobody found yet',
+                  subtitle: 'The search pauses after two minutes to save battery.',
+                  action: PrimaryButton(
+                    label: 'Search again',
+                    icon: Icons.refresh_rounded,
+                    onPressed: controller.rescan,
+                  ),
                 );
               }
             } else {
@@ -246,7 +321,13 @@ class _DeviceAreaState extends State<_DeviceArea> {
                 topPadding: widget.topPadding,
               );
             }
-            return AnimatedSwitcher(duration: Motion.medium, child: content);
+            // Top-aligned, so tips sit right under the radar instead of floating.
+            return AnimatedSwitcher(
+              duration: Motion.medium,
+              layoutBuilder: (current, previous) =>
+                  Stack(alignment: Alignment.topCenter, children: [...previous, ?current]),
+              child: content,
+            );
           }),
         ),
       ],
@@ -262,6 +343,7 @@ class _DeviceList extends GetView<NearbyController> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final inset = MediaQuery.paddingOf(context);
     final gutter = math.min(Responsive.gutter(context), 24.0);
     final bt = controller.bluetooth;
@@ -270,41 +352,55 @@ class _DeviceList extends GetView<NearbyController> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: Responsive.maxContentWidth),
         child: ListView.builder(
-          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           padding: EdgeInsets.fromLTRB(gutter, topPadding, gutter, inset.bottom + 16),
-          itemCount: devices.length + 1,
+          itemCount: devices.length + 2,
           itemBuilder: (_, index) {
-            if (index == devices.length) {
-              return Obx(() => AnimatedSwitcher(
-                    duration: Motion.medium,
-                    transitionBuilder: popTransition,
-                    child: bt.isScanning.value
-                        ? const SizedBox(height: 24)
-                        : Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Center(
-                              child: GhostButton(
-                                label: 'Scan again',
-                                icon: Icons.refresh_rounded,
-                                dense: true,
-                                onPressed: controller.rescan,
-                              ),
+            if (index == 0) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+                child: Text(
+                  'People nearby',
+                  style: theme.textTheme.labelLarge?.copyWith(color: AppColors.textMuted),
+                ),
+              );
+            }
+            if (index == devices.length + 1) {
+              return Obx(
+                () => AnimatedSwitcher(
+                  duration: Motion.medium,
+                  transitionBuilder: popTransition,
+                  child: bt.isScanning.value
+                      ? const SizedBox(height: 24)
+                      : Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Center(
+                            child: SecondaryButton(
+                              label: 'Scan again',
+                              icon: Icons.refresh_rounded,
+                              dense: true,
+                              onPressed: controller.rescan,
                             ),
                           ),
-                  ));
+                        ),
+                ),
+              );
             }
-            final device = devices[index];
+            final device = devices[index - 1];
             return Padding(
               key: ValueKey(device.deviceIdPrefix),
               padding: const EdgeInsets.only(bottom: 10),
               child: Entrance(
-                delay: stagger.delayFor(index),
-                child: Obx(() => DeviceTile(
-                      device: device,
-                      isKnown: controller.isKnown(device),
-                      linkState: controller.linkStateOf(device),
-                      onAction: () => controller.connectAndOpenChat(device),
-                    )),
+                delay: stagger.delayFor(index - 1),
+                offset: const Offset(0, 12),
+                duration: Motion.medium,
+                child: Obx(
+                  () => DeviceTile(
+                    device: device,
+                    isKnown: controller.isKnown(device),
+                    linkState: controller.linkStateOf(device),
+                    onAction: () => controller.connectAndOpenChat(device),
+                  ),
+                ),
               ),
             );
           },
@@ -314,31 +410,64 @@ class _DeviceList extends GetView<NearbyController> {
   }
 }
 
-class _Hint extends StatelessWidget {
-  const _Hint({super.key, required this.title, required this.body, this.action});
+/// A short card of what to check while nobody shows up.
+class _Tips extends StatelessWidget {
+  const _Tips({super.key, required this.title, required this.subtitle, this.action});
 
   final String title;
-  final String body;
+  final String subtitle;
   final Widget? action;
+
+  static const _tips = [
+    (Icons.phone_android_rounded, 'Blue Chat is open on their phone'),
+    (Icons.bluetooth_rounded, 'Their Bluetooth is on'),
+    (Icons.near_me_rounded, 'You are within about 10 metres'),
+  ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final inset = MediaQuery.paddingOf(context);
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(32, 12, 32, 24),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, inset.bottom + 20),
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
+          constraints: const BoxConstraints(maxWidth: 440),
           child: Entrance(
+            offset: const Offset(0, 12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(title, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
-                const SizedBox(height: 6),
-                Text(
-                  body,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.silver300),
+                Panel(
+                  radius: 20,
+                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 4),
+                      Text(subtitle, style: theme.textTheme.bodySmall),
+                      const SizedBox(height: 10),
+                      for (final (icon, text) in _tips)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Row(
+                            children: [
+                              IconChip(icon: icon),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  text,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.text,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
                 if (action != null) ...[const SizedBox(height: 18), action!],
               ],
@@ -359,13 +488,12 @@ class _Notice extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: GlassPanel(
+      child: Panel(
         radius: 16,
-        shadow: false,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            const Icon(Icons.visibility_off_outlined, size: 18, color: AppColors.silver300),
+            const Icon(Icons.visibility_off_outlined, size: 18, color: AppColors.warning),
             const SizedBox(width: 10),
             Expanded(child: Text(text, style: Theme.of(context).textTheme.bodySmall)),
           ],

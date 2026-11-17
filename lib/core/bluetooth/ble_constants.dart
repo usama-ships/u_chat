@@ -1,10 +1,10 @@
 import 'package:bluetooth_low_energy/bluetooth_low_energy.dart' show UUID;
 
-/// Fixed identifiers of the U Chat Bluetooth protocol.
+/// Fixed identifiers of the Blue Chat Bluetooth protocol.
 abstract final class BleConstants {
   // ---- GATT ----
 
-  /// The U Chat GATT service.
+  /// The Blue Chat GATT service.
   static final serviceUuid = UUID.fromString('b7e3c1a0-4f2d-4c8e-9a51-3d6f8e2b1c70');
 
   /// Central → peripheral packets (write with response).
@@ -55,8 +55,7 @@ abstract final class BleConstants {
   static const maxAdvertisementPayload = 24;
 
   /// Remaining bytes for the (truncated) display name.
-  static const maxAdvertisedNameBytes =
-      maxAdvertisementPayload - 3 - advertisedIdLength; // 13
+  static const maxAdvertisedNameBytes = maxAdvertisementPayload - 3 - advertisedIdLength; // 13
 
   /// A discovered device disappears from the list when not seen for this long.
   static const discoveryStaleAfter = Duration(seconds: 12);

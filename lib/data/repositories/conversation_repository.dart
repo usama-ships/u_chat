@@ -6,15 +6,17 @@ import '../../core/database/daos/conversation_dao.dart';
 import '../../core/database/daos/peer_dao.dart';
 import '../../core/security/identity_service.dart';
 import '../../core/security/ids.dart';
+import '../../core/voice/voice_store.dart';
 import '../models/conversation_with_peer.dart';
 
 /// Conversations and the peers they belong to.
 class ConversationRepository {
-  ConversationRepository(this._conversationDao, this._peerDao, this._identity);
+  ConversationRepository(this._conversationDao, this._peerDao, this._identity, {this._voiceStore});
 
   final ConversationDao _conversationDao;
   final PeerDao _peerDao;
   final IdentityService _identity;
+  final VoiceStore? _voiceStore;
 
   Stream<List<ConversationWithPeer>> watchConversations() => _conversationDao.watchAllWithPeers();
 
@@ -49,11 +51,11 @@ class ConversationRepository {
 
   /// Same as [openConversationWith], from a peer identified over Bluetooth.
   Future<Conversation> openConversationWithPeer(PeerInfo peer) => openConversationWith(
-        peerId: peer.id,
-        peerDisplayName: peer.displayName,
-        platform: peer.platform,
-        identityPublicKey: peer.publicKey,
-      );
+    peerId: peer.id,
+    peerDisplayName: peer.displayName,
+    platform: peer.platform,
+    identityPublicKey: peer.publicKey,
+  );
 
   String conversationIdForPeer(String peerId) => conversationIdFor(_identity.deviceId, peerId);
 
@@ -68,6 +70,9 @@ class ConversationRepository {
 
   Future<void> setBlocked(String peerId, bool blocked) => _peerDao.setBlocked(peerId, blocked);
 
-  Future<void> deleteConversation(String conversationId) =>
-      _conversationDao.deleteWithMessages(conversationId);
+  /// Removes the messages and their audio files.
+  Future<void> deleteConversation(String conversationId) async {
+    await _conversationDao.deleteWithMessages(conversationId);
+    await _voiceStore?.deleteConversation(conversationId);
+  }
 }

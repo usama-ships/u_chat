@@ -24,18 +24,22 @@ class BleConnector {
 
   void attach() {
     _subscriptions
-      ..add(_manager.characteristicNotified.listen((event) {
-        if (event.characteristic.uuid != BleConstants.txUuid) return;
-        _links[event.peripheral.uuid]?.deliver(event.value);
-      }))
-      ..add(_manager.connectionStateChanged.listen((event) {
-        if (event.state == ConnectionState.disconnected) {
-          _links.remove(event.peripheral.uuid)?.markClosed();
-        }
-      }));
+      ..add(
+        _manager.characteristicNotified.listen((event) {
+          if (event.characteristic.uuid != BleConstants.txUuid) return;
+          _links[event.peripheral.uuid]?.deliver(event.value);
+        }),
+      )
+      ..add(
+        _manager.connectionStateChanged.listen((event) {
+          if (event.state == ConnectionState.disconnected) {
+            _links.remove(event.peripheral.uuid)?.markClosed();
+          }
+        }),
+      );
   }
 
-  /// Connects, negotiates MTU, finds the U Chat service and subscribes to TX.
+  /// Connects, negotiates MTU, finds the Blue Chat service and subscribes to TX.
   Future<CentralLink> connect(Peripheral peripheral) async {
     final existing = _links[peripheral.uuid];
     if (existing != null && !existing.isDisposed) {
@@ -60,8 +64,9 @@ class BleConnector {
         debugPrint('requestMTU failed: $e');
       }
 
-      final services =
-          await _manager.discoverGATT(peripheral).timeout(BleConstants.gattOperationTimeout);
+      final services = await _manager
+          .discoverGATT(peripheral)
+          .timeout(BleConstants.gattOperationTimeout);
       GATTCharacteristic? rx;
       GATTCharacteristic? tx;
       for (final service in services) {
@@ -72,7 +77,7 @@ class BleConnector {
         }
       }
       if (rx == null || tx == null) {
-        throw BleConnectException('The device is not running U Chat');
+        throw BleConnectException('The device is not running Blue Chat');
       }
 
       // Register before subscribing so the first notification isn't lost.

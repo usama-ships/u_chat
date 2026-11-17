@@ -7,11 +7,7 @@ import 'package:crypto/crypto.dart';
 /// when compared in person, nobody is impersonating either side.
 String safetyNumber(List<int> publicKeyA, List<int> publicKeyB) {
   final keys = [publicKeyA, publicKeyB]..sort(_compareBytes);
-  final digest = sha256.convert([
-    ...utf8.encode('uchat-safety-v1'),
-    ...keys[0],
-    ...keys[1],
-  ]).bytes;
+  final digest = sha256.convert([...utf8.encode('uchat-safety-v1'), ...keys[0], ...keys[1]]).bytes;
   final groups = <String>[];
   for (var g = 0; g < 6; g++) {
     var value = 0;
